@@ -12,6 +12,11 @@ class DashboardController extends Controller
     public function __invoke(Request $request)
     {
         $user = $request->user();
+
+        if ($user->isAdmin()) {
+            return redirect()->route('admin.dashboard');
+        }
+
         $user->load(['profile.skinType', 'latestAnalysis', 'userProducts.product']);
 
         $latestAnalysis = $user->latestAnalysis;

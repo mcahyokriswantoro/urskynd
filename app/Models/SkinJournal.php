@@ -34,14 +34,19 @@ class SkinJournal extends Model
 
     public function concerns()
     {
-        return $this->hasMany(JournalConcern::class);
+        return $this->belongsToMany(SkinConcern::class, 'journal_concerns', 'skin_journal_id', 'skin_concern_id')
+            ->withPivot('severity')
+            ->withTimestamps();
     }
 
     public function skinConcerns()
     {
-        return $this->belongsToMany(SkinConcern::class, 'journal_concerns', 'skin_journal_id', 'skin_concern_id')
-            ->withPivot('severity')
-            ->withTimestamps();
+        return $this->concerns();
+    }
+
+    public function journalConcerns()
+    {
+        return $this->hasMany(JournalConcern::class);
     }
 
     public function getPhotoUrlAttribute(): ?string

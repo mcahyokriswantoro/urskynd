@@ -14,10 +14,10 @@ class RewardController extends Controller
         $user = $request->user();
         
         // Eager load achievements
-        $user->load(['achievements.achievement']);
+        $user->load('achievements');
         
         // Get point history
-        $pointHistory = $user->points()->orderBy('created_at', 'desc')->paginate(10);
+        $pointHistory = $user->pointTransactions()->orderBy('created_at', 'desc')->paginate(10);
         
         // Get all available achievements for UI
         $allAchievements = \App\Models\Achievement::all();

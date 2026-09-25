@@ -98,9 +98,9 @@ class SkinAnalysisService
         $query = $user->skinAnalyses()->with('metrics');
 
         $analyses = match ($period) {
-            'weekly' => $query->where('analysis_date', '>=', now()->subWeeks($limit))->get(),
-            'yearly' => $query->where('analysis_date', '>=', now()->subYears($limit))->get(),
-            default => $query->where('analysis_date', '>=', now()->subMonths($limit))->get(),
+            'weekly' => $query->where('analysis_date', '>=', now()->subWeeks($limit))->orderBy('analysis_date', 'asc')->get(),
+            'yearly' => $query->where('analysis_date', '>=', now()->subYears($limit))->orderBy('analysis_date', 'asc')->get(),
+            default => $query->where('analysis_date', '>=', now()->subMonths($limit))->orderBy('analysis_date', 'asc')->get(),
         };
 
         return [

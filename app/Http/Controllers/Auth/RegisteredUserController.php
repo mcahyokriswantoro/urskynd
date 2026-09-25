@@ -33,12 +33,21 @@ class RegisteredUserController extends Controller
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
+            'phone' => ['required', 'string', 'max:20'],
+            'age' => ['required', 'integer', 'min:10', 'max:120'],
+            'address' => ['nullable', 'string', 'max:500'],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
+
+        // Calculate estimated birth date from age
+        $birthDate = now()->subYears((int) $request->age)->startOfYear()->toDateString();
 
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
+            'phone' => $request->phone,
+            'address' => $request->address,
+            'birth_date' => $birthDate,
             'password' => Hash::make($request->password),
         ]);
 

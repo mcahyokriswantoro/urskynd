@@ -13,7 +13,7 @@ class EnsureOnboardingCompleted
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if ($request->user() && !$request->user()->onboarding_completed && !$request->routeIs('onboarding.*')) {
+        if ($request->user() && !$request->user()->isAdmin() && !$request->user()->onboarding_completed && !$request->routeIs('onboarding.*')) {
             return redirect()->route('onboarding.index');
         }
 

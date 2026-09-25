@@ -1,9 +1,9 @@
 <aside class="hidden md:flex md:flex-col md:w-64 md:fixed md:inset-y-0 bg-white border-r border-brand-border z-40 shadow-sm">
     <!-- Logo -->
     <div class="flex items-center justify-center h-20 border-b border-brand-border/50 px-6">
-        <a href="{{ route('dashboard') }}" class="flex items-center gap-3">
-            {{-- We'll use a text logo for now, or you can replace with SVG --}}
-            <span class="text-2xl font-serif font-bold tracking-wider text-brand-text">URSKYND</span>
+        <a href="{{ route('dashboard') }}" class="flex items-center gap-3 group">
+            <img src="{{ asset('images/logo.png') }}" alt="URSKYND Logo" class="h-9 w-auto object-contain transition-transform group-hover:scale-105">
+            <span class="text-xl font-serif font-bold tracking-wider text-brand-text">URSKYND</span>
         </a>
     </div>
 
@@ -19,7 +19,7 @@
             Skin Analysis
         </a>
 
-        <a href="{{ route('tracker.index') ?? '#' }}" class="flex items-center px-4 py-3 rounded-xl transition-colors {{ request()->routeIs('tracker.*') ? 'bg-brand-primary/10 text-brand-primary font-medium' : 'text-brand-textAlt hover:bg-brand-cream hover:text-brand-primary' }}">
+        <a href="{{ route('tracker.index') }}" class="flex items-center px-4 py-3 rounded-xl transition-colors {{ request()->routeIs('tracker.*') ? 'bg-brand-primary/10 text-brand-primary font-medium' : 'text-brand-textAlt hover:bg-brand-cream hover:text-brand-primary' }}">
             <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"></path></svg>
             Skin Tracker
         </a>
@@ -31,7 +31,7 @@
 
         <div class="pt-4 mt-4 border-t border-brand-border/50">
             <p class="px-4 text-xs font-semibold text-brand-secondary uppercase tracking-wider mb-2">Skincare</p>
-            <a href="{{ route('routine.index') ?? '#' }}" class="flex items-center px-4 py-3 rounded-xl transition-colors {{ request()->routeIs('routine.*') ? 'bg-brand-primary/10 text-brand-primary font-medium' : 'text-brand-textAlt hover:bg-brand-cream hover:text-brand-primary' }}">
+            <a href="{{ route('routines.index') }}" class="flex items-center px-4 py-3 rounded-xl transition-colors {{ request()->routeIs('routines.*') ? 'bg-brand-primary/10 text-brand-primary font-medium' : 'text-brand-textAlt hover:bg-brand-cream hover:text-brand-primary' }}">
                 <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                 My Routine
             </a>

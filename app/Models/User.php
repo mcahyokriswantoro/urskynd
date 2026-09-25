@@ -21,6 +21,7 @@ class User extends Authenticatable
         'role',
         'avatar',
         'phone',
+        'address',
         'birth_date',
         'gender',
         'points',

@@ -54,7 +54,15 @@
                         @if($product->image)
                             <img src="{{ $product->image_url }}" alt="{{ $product->name }}" class="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500">
                         @else
-                            <svg class="w-16 h-16 text-brand-primary/30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
+                            @php
+                                $bgPos = '20% 80%';
+                                if ($product->category?->name === 'Serum') $bgPos = '8% 85%';
+                                elseif ($product->category?->name === 'Cleanser') $bgPos = '22% 85%';
+                                elseif ($product->category?->name === 'Sunscreen') $bgPos = '35% 85%';
+                            @endphp
+                            <div class="w-full h-full overflow-hidden flex items-center justify-center rounded-xl">
+                                <img src="{{ asset('images/brand-assets.jpg') }}" alt="{{ $product->name }}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" style="object-position: {{ $bgPos }}; transform: scale(3.5);">
+                            </div>
                         @endif
                         
                         <!-- AI Match Badge (Mockup feature) -->

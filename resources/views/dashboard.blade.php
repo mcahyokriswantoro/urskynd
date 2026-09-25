@@ -47,33 +47,47 @@
             </x-card>
 
             <!-- Quick Actions (Mobile Grid) -->
-            <div class="grid grid-cols-4 gap-3 md:hidden">
-                <a href="{{ route('skin-check.index') }}" class="flex flex-col items-center p-3 bg-white rounded-xl shadow-soft border border-brand-border/50 text-center">
-                    <div class="w-10 h-10 mb-2 rounded-full bg-brand-cream flex items-center justify-center text-brand-primary">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+            <div class="grid grid-cols-4 sm:grid-cols-6 gap-2.5 md:hidden">
+                <a href="{{ route('skin-check.index') }}" class="flex flex-col items-center p-2.5 bg-white rounded-xl shadow-soft border border-brand-border/50 text-center hover:border-brand-primary/40 transition-all">
+                    <div class="w-9 h-9 mb-1.5 rounded-full bg-brand-cream flex items-center justify-center text-brand-primary">
+                        <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
                     </div>
                     <span class="text-[10px] font-medium text-brand-text">Skin Check</span>
                 </a>
                 
-                <a href="#" class="flex flex-col items-center p-3 bg-white rounded-xl shadow-soft border border-brand-border/50 text-center">
-                    <div class="w-10 h-10 mb-2 rounded-full bg-brand-cream flex items-center justify-center text-brand-primary">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                <a href="{{ route('tracker.index') }}" class="flex flex-col items-center p-2.5 bg-white rounded-xl shadow-soft border border-brand-border/50 text-center hover:border-brand-primary/40 transition-all">
+                    <div class="w-9 h-9 mb-1.5 rounded-full bg-brand-cream flex items-center justify-center text-brand-primary">
+                        <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"></path></svg>
                     </div>
-                    <span class="text-[10px] font-medium text-brand-text">UV Index</span>
+                    <span class="text-[10px] font-medium text-brand-text">Tracker</span>
                 </a>
 
-                <a href="{{ route('reminders.index') }}" class="flex flex-col items-center p-3 bg-white rounded-xl shadow-soft border border-brand-border/50 text-center">
-                    <div class="w-10 h-10 mb-2 rounded-full bg-brand-cream flex items-center justify-center text-brand-primary">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <a href="{{ route('routines.index') }}" class="flex flex-col items-center p-2.5 bg-white rounded-xl shadow-soft border border-brand-border/50 text-center hover:border-brand-primary/40 transition-all">
+                    <div class="w-9 h-9 mb-1.5 rounded-full bg-brand-cream flex items-center justify-center text-brand-primary">
+                        <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                     </div>
-                    <span class="text-[10px] font-medium text-brand-text">Reminder</span>
+                    <span class="text-[10px] font-medium text-brand-text">Routine</span>
                 </a>
 
-                <a href="{{ route('journal.index') }}" class="flex flex-col items-center p-3 bg-white rounded-xl shadow-soft border border-brand-border/50 text-center">
-                    <div class="w-10 h-10 mb-2 rounded-full bg-brand-cream flex items-center justify-center text-brand-primary">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                <a href="{{ route('journal.index') }}" class="flex flex-col items-center p-2.5 bg-white rounded-xl shadow-soft border border-brand-border/50 text-center hover:border-brand-primary/40 transition-all">
+                    <div class="w-9 h-9 mb-1.5 rounded-full bg-brand-cream flex items-center justify-center text-brand-primary">
+                        <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
                     </div>
-                    <span class="text-[10px] font-medium text-brand-text">Skin Journal</span>
+                    <span class="text-[10px] font-medium text-brand-text">Journal</span>
+                </a>
+
+                <a href="{{ route('rewards.index') }}" class="flex flex-col items-center p-2.5 bg-white rounded-xl shadow-soft border border-brand-border/50 text-center hover:border-brand-primary/40 transition-all">
+                    <div class="w-9 h-9 mb-1.5 rounded-full bg-brand-cream flex items-center justify-center text-brand-primary">
+                        <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path></svg>
+                    </div>
+                    <span class="text-[10px] font-medium text-brand-text">Rewards</span>
+                </a>
+
+                <a href="{{ route('products.index') }}" class="flex flex-col items-center p-2.5 bg-white rounded-xl shadow-soft border border-brand-border/50 text-center hover:border-brand-primary/40 transition-all">
+                    <div class="w-9 h-9 mb-1.5 rounded-full bg-brand-cream flex items-center justify-center text-brand-primary">
+                        <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
+                    </div>
+                    <span class="text-[10px] font-medium text-brand-text">Produk</span>
                 </a>
             </div>
 
@@ -103,7 +117,7 @@
                             </div>
                         @endforeach
                         
-                        <a href="{{ route('products.create') }}" class="snap-start min-w-[120px] bg-brand-cream/50 border border-dashed border-brand-primary/30 rounded-xl p-3 flex flex-col items-center justify-center text-brand-primary hover:bg-brand-cream transition-colors">
+                        <a href="{{ route('products.index') }}" class="snap-start min-w-[120px] bg-brand-cream/50 border border-dashed border-brand-primary/30 rounded-xl p-3 flex flex-col items-center justify-center text-brand-primary hover:bg-brand-cream transition-colors">
                             <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
                             <span class="text-xs font-medium">Tambah</span>
                         </a>
@@ -112,7 +126,7 @@
                     <x-card padding="p-6">
                         <div class="text-center">
                             <p class="text-sm text-brand-textAlt mb-3">Belum ada produk skincare yang terdaftar.</p>
-                            <a href="{{ route('products.create') }}" class="text-sm font-medium text-brand-primary">Tambah Produk +</a>
+                            <a href="{{ route('products.index') }}" class="text-sm font-medium text-brand-primary">Tambah Produk +</a>
                         </div>
                     </x-card>
                 @endif
@@ -154,7 +168,7 @@
                             Routine Malam
                         @endif
                     </h3>
-                    <a href="{{ route('routine.index') }}" class="text-xs font-medium text-brand-primary hover:underline">Edit</a>
+                    <a href="{{ route('routines.index') }}" class="text-xs font-medium text-brand-primary hover:underline">Edit</a>
                 </div>
                 
                 <div class="p-5">
@@ -181,7 +195,7 @@
                     @else
                         <div class="text-center py-6">
                             <p class="text-sm text-brand-textAlt mb-3">Rutinitas belum diatur.</p>
-                            <a href="{{ route('routine.index') }}" class="inline-flex items-center px-4 py-2 bg-brand-cream text-brand-primary text-xs font-medium rounded-lg hover:bg-brand-creamAlt transition-colors">
+                            <a href="{{ route('routines.index') }}" class="inline-flex items-center px-4 py-2 bg-brand-cream text-brand-primary text-xs font-medium rounded-lg hover:bg-brand-creamAlt transition-colors">
                                 Buat Routine
                             </a>
                         </div>

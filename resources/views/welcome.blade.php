@@ -3,7 +3,9 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>{{ config('app.name', 'URSKYND') }} - AI Skin Companion</title>
+        <title>URSKYND - Smart AI Skin Clinic & Analysis</title>
+        <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}?v=5">
+        <link rel="shortcut icon" href="{{ asset('favicon.ico') }}?v=5">
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
     <body class="font-sans antialiased text-brand-text bg-brand-cream overflow-x-hidden">
@@ -14,7 +16,7 @@
                 <div class="flex justify-between items-center h-20">
                     <!-- Logo -->
                     <div class="flex-shrink-0 flex items-center">
-                        <span class="text-2xl font-serif font-bold tracking-widest text-brand-text">URSKYND</span>
+                        <x-application-logo class="h-16 w-auto mix-blend-multiply" />
                     </div>
 
                     <!-- Desktop Menu -->

@@ -7,7 +7,15 @@
         <!-- Scanning Animation Container -->
         <div class="relative w-64 h-64 rounded-full border-4 border-brand-creamAlt overflow-hidden shadow-soft-lg bg-white mb-8">
             <!-- Simulated uploaded image (blurred/filtered) -->
-            <img src="{{ $analysis->image_url }}" alt="Skin Scan" class="absolute inset-0 w-full h-full object-cover filter brightness-90 sepia-[.2]">
+            @if($analysis->image_url)
+                <img src="{{ $analysis->image_url }}" alt="Skin Scan" class="absolute inset-0 w-full h-full object-cover filter brightness-90 sepia-[.2]">
+            @else
+                <div class="absolute inset-0 w-full h-full bg-gradient-to-br from-[#E2D2C3] via-[#D5BEAD] to-[#BA9E8C] flex items-center justify-center text-brand-primary">
+                    <svg class="w-20 h-20 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+            @endif
             
             <!-- Scanning Line -->
             <div class="absolute inset-0 w-full animate-scan">

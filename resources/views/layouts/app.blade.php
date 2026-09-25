@@ -6,6 +6,8 @@
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
         <title>{{ config('app.name', 'URSKYND') }}</title>
+        <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}?v=5">
+        <link rel="shortcut icon" href="{{ asset('favicon.ico') }}?v=5">
 
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])

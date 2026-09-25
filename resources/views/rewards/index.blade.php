@@ -16,7 +16,7 @@
                 <div class="relative z-10">
                     <p class="text-white/80 text-sm font-medium uppercase tracking-wider mb-2">Total Points</p>
                     <div class="flex items-end gap-2 mb-4">
-                        <span class="text-5xl font-serif font-bold">{{ number_format($user->reward_points) }}</span>
+                        <span class="text-5xl font-serif font-bold">{{ number_format($user->points) }}</span>
                         <span class="text-white/80 font-medium pb-1">pts</span>
                     </div>
                     
@@ -24,7 +24,7 @@
                         <div class="flex justify-between items-center text-sm">
                             <span class="text-white/80">Status Member</span>
                             <span class="font-bold bg-white/20 px-3 py-1 rounded-full text-xs">
-                                {{ $user->reward_points >= 500 ? 'Gold' : ($user->reward_points >= 100 ? 'Silver' : 'Bronze') }}
+                                {{ $user->points >= 500 ? 'Gold' : ($user->points >= 100 ? 'Silver' : 'Bronze') }}
                             </span>
                         </div>
                     </div>
@@ -80,7 +80,7 @@
 
                 <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
                     @php
-                        $userAchievementIds = $user->achievements->pluck('achievement_id')->toArray();
+                        $userAchievementIds = $user->achievements->pluck('id')->toArray();
                     @endphp
 
                     @foreach($allAchievements as $achievement)

@@ -44,6 +44,11 @@ class SkinAnalysis extends Model
         return $this->hasMany(SkinAnalysisMetric::class);
     }
 
+    public function recommendation()
+    {
+        return $this->hasOne(Recommendation::class)->latestOfMany();
+    }
+
     public function recommendations()
     {
         return $this->hasMany(Recommendation::class);

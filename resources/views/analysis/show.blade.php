@@ -12,8 +12,17 @@
         <div class="md:col-span-4 space-y-6">
             <x-card padding="p-0" class="overflow-hidden bg-gradient-to-br from-[#FDFBF9] to-[#F4EAE1]">
                 <!-- Photo -->
-                <div class="h-64 w-full relative">
-                    <img src="{{ $analysis->image_url }}" alt="Analyzed Photo" class="w-full h-full object-cover">
+                <div class="h-64 w-full relative bg-[#EBE0D8] overflow-hidden flex items-center justify-center">
+                    @if($analysis->image_url)
+                        <img src="{{ $analysis->image_url }}" alt="Analyzed Photo" class="w-full h-full object-cover">
+                    @else
+                        <div class="w-full h-full bg-gradient-to-br from-[#E2D2C3] via-[#D5BEAD] to-[#BA9E8C] flex flex-col items-center justify-center p-6 text-brand-primary">
+                            <svg class="w-16 h-16 opacity-30 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            <span class="text-xs font-semibold tracking-wider uppercase text-brand-primary/60">Data Simulasi</span>
+                        </div>
+                    @endif
                     <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-6">
                         <div class="text-white">
                             <p class="text-xs uppercase tracking-widest font-semibold opacity-80 mb-1">Skin Age</p>

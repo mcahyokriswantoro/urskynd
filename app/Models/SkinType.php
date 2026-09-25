@@ -16,6 +16,11 @@ class SkinType extends Model
         return $this->hasMany(UserProfile::class);
     }
 
+    public function users()
+    {
+        return $this->hasManyThrough(User::class, UserProfile::class, 'skin_type_id', 'id', 'id', 'user_id');
+    }
+
     public function skinAnalyses()
     {
         return $this->hasMany(SkinAnalysis::class);

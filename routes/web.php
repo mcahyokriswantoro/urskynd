@@ -15,12 +15,13 @@ Route::middleware('auth')->group(function () {
     Route::get('/onboarding', [\App\Http\Controllers\OnboardingController::class, 'index'])->name('onboarding.index');
     Route::post('/onboarding', [\App\Http\Controllers\OnboardingController::class, 'store'])->name('onboarding.store');
 
-    // Skin Analysis
+    // Skin Analysis & Tracker
     Route::get('/skin-check', [\App\Http\Controllers\SkinAnalysisController::class, 'index'])->name('skin-check.index');
     Route::post('/skin-check', [\App\Http\Controllers\SkinAnalysisController::class, 'store'])->name('skin-check.store');
     Route::get('/analysis/{analysis}/process', [\App\Http\Controllers\SkinAnalysisController::class, 'process'])->name('analysis.process');
     Route::get('/analysis/{analysis}', [\App\Http\Controllers\SkinAnalysisController::class, 'show'])->name('analysis.show');
     Route::get('/analysis', function () { return redirect()->route('skin-check.index'); })->name('analysis.index');
+    Route::get('/tracker', [\App\Http\Controllers\TrackerController::class, 'index'])->name('tracker.index');
 
     // Skin Journal
     Route::get('/journal', [\App\Http\Controllers\SkinJournalController::class, 'index'])->name('journal.index');

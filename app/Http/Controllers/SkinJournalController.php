@@ -15,6 +15,7 @@ class SkinJournalController extends Controller
     public function index(Request $request)
     {
         $journals = $request->user()->skinJournals()
+            ->with('concerns')
             ->orderBy('journal_date', 'desc')
             ->paginate(10);
             
