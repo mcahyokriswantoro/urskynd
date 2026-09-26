@@ -13,7 +13,7 @@ class ProductController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Product::with('category')->where('is_active', true);
+        $query = Product::with('category')->where('status', 'active');
 
         // Filter by category
         if ($request->has('category') && $request->category !== 'all') {
@@ -43,18 +43,18 @@ class ProductController extends Controller
      */
     public function show(Product $product)
     {
-        abort_if(!$product->is_active, 404);
+        abort_if($product->status !== 'active', 404);
         
         $product->load(['category']);
         
         // Find similar products
         $similarProducts = Product::where('product_category_id', $product->product_category_id)
             ->where('id', '!=', $product->id)
-            ->where('is_active', true)
+            ->where('status', 'active')
             ->take(4)
             ->get();
 
-        $isInCollection = auth()->user()->products()->where('product_id', $product->id)->exists();
+        $isInCollection = auth()->check() && auth()->user()->userProducts()->where('product_id', $product->id)->exists();
 
         return view('products.show', compact('product', 'similarProducts', 'isInCollection'));
     }

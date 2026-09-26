@@ -65,8 +65,8 @@ class RoutineController extends Controller
         
         // Get user's products that aren't in this routine yet
         $existingProductIds = $routine->items->pluck('user_product_id');
-        $availableProducts = auth()->user()->products()
-            ->where('is_active', true)
+        $availableProducts = auth()->user()->userProducts()
+            ->where('status', 'active')
             ->whereNotIn('id', $existingProductIds)
             ->with('product.category')
             ->get();

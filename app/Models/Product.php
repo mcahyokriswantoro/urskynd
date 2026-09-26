@@ -40,4 +40,14 @@ class Product extends Model
     {
         return $this->brand . ' ' . $this->name;
     }
+
+    public function getIsActiveAttribute(): bool
+    {
+        return $this->status === 'active';
+    }
+
+    public function scopeActive($query)
+    {
+        return $query->where('status', 'active');
+    }
 }
