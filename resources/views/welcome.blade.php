@@ -36,6 +36,21 @@
                             </div>
                         @endif
                     </div>
+
+                    <!-- Mobile Menu Actions -->
+                    <div class="flex md:hidden items-center space-x-2 sm:space-x-3">
+                        <a href="#fitur" class="text-xs sm:text-sm text-brand-textAlt hover:text-brand-primary font-medium px-2 py-1">Fitur</a>
+                        @if (Route::has('login'))
+                            @auth
+                                <a href="{{ url('/dashboard') }}" class="px-3.5 py-1.5 bg-brand-primary text-white rounded-lg text-xs sm:text-sm font-medium hover:bg-brand-primaryAlt transition-all shadow-soft">Dashboard</a>
+                            @else
+                                <a href="{{ route('login') }}" class="text-xs sm:text-sm text-brand-text font-medium hover:text-brand-primary px-2 py-1.5">Masuk</a>
+                                @if (Route::has('register'))
+                                    <a href="{{ route('register') }}" class="px-3.5 py-1.5 bg-brand-primary text-white rounded-lg text-xs sm:text-sm font-medium hover:bg-brand-primaryAlt transition-all shadow-soft">Daftar</a>
+                                @endif
+                            @endauth
+                        @endif
+                    </div>
                 </div>
             </div>
         </nav>
