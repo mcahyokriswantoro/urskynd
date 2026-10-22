@@ -4,19 +4,41 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return view('welcome');
-});
+    $featuredProducts = \Illuminate\Support\Facades\Schema::hasTable('products') 
+        ? \App\Models\Product::with('category')->where('status', 'active')->take(4)->get()
+        : collect();
+    $latestArticles = \Illuminate\Support\Facades\Schema::hasTable('articles')
+        ? \App\Models\Article::published()->take(3)->get()
+        : collect();
+    return view('welcome', compact('featuredProducts', 'latestArticles'));
+})->name('home');
 
+// Public Skin Check Landing & Preview
+Route::get('/skin-check', [\App\Http\Controllers\SkinAnalysisController::class, 'index'])->name('skin-check.index');
+
+// Public Products Catalog & Details
+Route::get('/products', [\App\Http\Controllers\ProductController::class, 'index'])->name('products.index');
+Route::get('/products/{product}', [\App\Http\Controllers\ProductController::class, 'show'])->name('products.show');
+
+// Public Consultation Menu & Submission
+Route::get('/konsultasi', [\App\Http\Controllers\ConsultationController::class, 'index'])->name('consultation.index');
+Route::post('/konsultasi', [\App\Http\Controllers\ConsultationController::class, 'store'])->name('consultation.store');
+
+// Public News & Skincare Articles Menu
+Route::get('/berita', [\App\Http\Controllers\NewsController::class, 'index'])->name('news.index');
+Route::get('/berita/{slug}', [\App\Http\Controllers\NewsController::class, 'show'])->name('news.show');
+
+// Authenticated User Dashboard
 Route::get('/dashboard', \App\Http\Controllers\DashboardController::class)
     ->middleware(['auth', 'verified', 'onboarding'])
     ->name('dashboard');
 
+// Authenticated Routes
 Route::middleware('auth')->group(function () {
     Route::get('/onboarding', [\App\Http\Controllers\OnboardingController::class, 'index'])->name('onboarding.index');
     Route::post('/onboarding', [\App\Http\Controllers\OnboardingController::class, 'store'])->name('onboarding.store');
 
-    // Skin Analysis & Tracker
-    Route::get('/skin-check', [\App\Http\Controllers\SkinAnalysisController::class, 'index'])->name('skin-check.index');
+    // Skin Analysis & Tracker (Lanjutan & Analisis Lengkap requires auth)
     Route::post('/skin-check', [\App\Http\Controllers\SkinAnalysisController::class, 'store'])->name('skin-check.store');
     Route::get('/analysis/{analysis}/process', [\App\Http\Controllers\SkinAnalysisController::class, 'process'])->name('analysis.process');
     Route::get('/analysis/{analysis}', [\App\Http\Controllers\SkinAnalysisController::class, 'show'])->name('analysis.show');
@@ -28,9 +50,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/journal/create', [\App\Http\Controllers\SkinJournalController::class, 'create'])->name('journal.create');
     Route::post('/journal', [\App\Http\Controllers\SkinJournalController::class, 'store'])->name('journal.store');
 
-    // Products Catalog
-    Route::get('/products', [\App\Http\Controllers\ProductController::class, 'index'])->name('products.index');
-    Route::get('/products/{product}', [\App\Http\Controllers\ProductController::class, 'show'])->name('products.show');
+    // Products - Add to collection (requires auth)
     Route::post('/products/{product}/add-to-collection', [\App\Http\Controllers\ProductController::class, 'addToCollection'])->name('products.add-to-collection');
 
     // Routines
@@ -51,6 +71,16 @@ Route::middleware('auth')->group(function () {
 // Admin Routes
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [\App\Http\Controllers\AdminDashboardController::class, 'index'])->name('dashboard');
+
+    // Products Management
+    Route::resource('products', \App\Http\Controllers\AdminProductController::class)->except(['show']);
+
+    // Articles / News Management
+    Route::resource('articles', \App\Http\Controllers\AdminArticleController::class)->except(['show']);
+
+    // Doctors & Consultations Management
+    Route::resource('doctors', \App\Http\Controllers\AdminDoctorController::class)->except(['show']);
+    Route::patch('/bookings/{booking}/status', [\App\Http\Controllers\AdminDoctorController::class, 'updateBooking'])->name('bookings.status');
 });
 
 require __DIR__.'/auth.php';

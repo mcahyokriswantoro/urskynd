@@ -32,7 +32,9 @@ class ProductController extends Controller
         }
 
         $products = $query->paginate(12)->withQueryString();
-        $categories = ProductCategory::all();
+        $categories = ProductCategory::whereHas('products', function ($q) {
+            $q->where('status', 'active');
+        })->get();
         $currentCategory = $request->category ?? 'all';
 
         return view('products.index', compact('products', 'categories', 'currentCategory'));

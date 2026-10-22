@@ -23,7 +23,8 @@ class AdminDashboardController extends Controller
         // 1. KPI Statistics
         $totalUsers = User::where('role', 'user')->count();
         $totalAnalyses = SkinAnalysis::count();
-        $totalProducts = Product::count();
+        $totalProducts = Product::where('status', 'active')->count();
+        $totalArticles = \App\Models\Article::count();
         $totalJournals = SkinJournal::count();
         $totalPoints = PointTransaction::where('type', 'credit')->sum('points');
         $avgSkinScore = round(SkinAnalysis::avg('overall_score') ?? 0, 1);
@@ -47,13 +48,22 @@ class AdminDashboardController extends Controller
             ->take(6)
             ->get();
 
-        // 6. Recent Products
-        $products = Product::with('category')->latest()->take(6)->get();
+        // 6. Active Official Products (Urskynd Official)
+        $products = Product::where('status', 'active')
+            ->with('category')
+            ->latest()
+            ->get();
+        if ($products->isEmpty()) {
+            $products = Product::with('category')->latest()->take(6)->get();
+        }
 
-        // 7. Recent Point Transactions
+        // 7. Recent Articles / Berita Edukasi
+        $articles = \App\Models\Article::latest()->take(4)->get();
+
+        // 8. Recent Point Transactions
         $recentPoints = PointTransaction::with('user')->latest()->take(6)->get();
 
-        // 8. 7-Day Activity Trends
+        // 9. 7-Day Activity Trends
         $days = collect(range(6, 0))->map(function ($i) {
             $date = now()->subDays($i);
             return [
@@ -72,6 +82,7 @@ class AdminDashboardController extends Controller
             'totalUsers',
             'totalAnalyses',
             'totalProducts',
+            'totalArticles',
             'totalJournals',
             'totalPoints',
             'avgSkinScore',
@@ -80,6 +91,7 @@ class AdminDashboardController extends Controller
             'recentUsers',
             'recentAnalyses',
             'products',
+            'articles',
             'recentPoints',
             'chartDates',
             'chartAnalyses',

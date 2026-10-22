@@ -17,9 +17,21 @@ class Product extends Model
         'description',
         'image',
         'size',
+        'price',
+        'badge',
         'usage_instruction',
         'status',
     ];
+
+    public function getFormattedPriceAttribute(): string
+    {
+        return 'Rp ' . number_format($this->price ?? 129000, 0, ',', '.');
+    }
+
+    public function resolveRouteBinding($value, $field = null)
+    {
+        return $this->where('id', $value)->orWhere('slug', $value)->firstOrFail();
+    }
 
     public function category()
     {
@@ -33,7 +45,40 @@ class Product extends Model
 
     public function getImageUrlAttribute(): ?string
     {
-        return $this->image ? asset('storage/' . $this->image) : null;
+        if (!$this->image) {
+            return null;
+        }
+        if (str_starts_with($this->image, 'http://') || str_starts_with($this->image, 'https://')) {
+            return $this->image;
+        }
+        if (file_exists(public_path($this->image))) {
+            return asset($this->image);
+        }
+        return asset('storage/' . $this->image);
+    }
+
+    public function getBadgeAttribute(?string $value = null): string
+    {
+        if (!empty($value)) {
+            return $value;
+        }
+
+        return match ($this->slug) {
+            'serum' => 'Terlaris',
+            'sunscreen' => 'Best Seller',
+            'cleanser' => 'Gentle',
+            default => 'BPOM Certified',
+        };
+    }
+
+    public function getRatingAttribute(): string
+    {
+        return match ($this->slug) {
+            'serum' => '4.9 (987 ulasan)',
+            'sunscreen' => '4.9 (1.234 ulasan)',
+            'cleanser' => '4.8 (754 ulasan)',
+            default => '4.9 (500+ ulasan)',
+        };
     }
 
     public function getFullNameAttribute(): string
