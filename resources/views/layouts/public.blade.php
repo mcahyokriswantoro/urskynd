@@ -58,6 +58,13 @@
                         Produk
                     </a>
 
+                    <!-- Detail Pembelian Menu -->
+                    <a href="{{ route('pembelian.index') }}" 
+                       class="px-3.5 py-2 rounded-xl text-sm font-medium transition-colors flex items-center gap-1.5 {{ request()->routeIs('pembelian.*') ? 'text-brand-primary bg-brand-primary/10 font-bold' : 'text-brand-textAlt hover:text-brand-primary hover:bg-brand-cream/60' }}">
+                        <span class="text-xs">🛍️</span>
+                        <span>Detail Pembelian</span>
+                    </a>
+
                     <!-- Konsultasi Menu -->
                     <a href="{{ route('consultation.index') }}" 
                        class="px-3.5 py-2 rounded-xl text-sm font-medium transition-colors {{ request()->routeIs('consultation.*') ? 'text-brand-primary bg-brand-primary/10 font-bold' : 'text-brand-textAlt hover:text-brand-primary hover:bg-brand-cream/60' }}">
@@ -68,6 +75,12 @@
                     <a href="{{ route('news.index') }}" 
                        class="px-3.5 py-2 rounded-xl text-sm font-medium transition-colors {{ request()->routeIs('news.*') ? 'text-brand-primary bg-brand-primary/10 font-bold' : 'text-brand-textAlt hover:text-brand-primary hover:bg-brand-cream/60' }}">
                         Berita & Tips
+                    </a>
+
+                    <!-- Kontak Menu -->
+                    <a href="{{ route('contact.index') }}" 
+                       class="px-3.5 py-2 rounded-xl text-sm font-medium transition-colors {{ request()->routeIs('contact.*') ? 'text-brand-primary bg-brand-primary/10 font-bold' : 'text-brand-textAlt hover:text-brand-primary hover:bg-brand-cream/60' }}">
+                        Kontak
                     </a>
                 </div>
 
@@ -136,6 +149,15 @@
                 Katalog Produk
             </a>
 
+            <a href="{{ route('pembelian.index') }}" 
+               class="flex items-center justify-between px-4 py-3 rounded-xl text-base font-medium {{ request()->routeIs('pembelian.*') ? 'bg-brand-primary/10 text-brand-primary font-bold' : 'text-brand-text hover:bg-brand-cream' }}">
+                <span class="flex items-center gap-2">
+                    <span>🛍️</span>
+                    <span>Detail Pembelian Produk</span>
+                </span>
+                <span class="text-xs px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-semibold">Promo</span>
+            </a>
+
             <a href="{{ route('consultation.index') }}" 
                class="block px-4 py-3 rounded-xl text-base font-medium {{ request()->routeIs('consultation.*') ? 'bg-brand-primary/10 text-brand-primary font-bold' : 'text-brand-text hover:bg-brand-cream' }}">
                 Konsultasi Dokter
@@ -144,6 +166,11 @@
             <a href="{{ route('news.index') }}" 
                class="block px-4 py-3 rounded-xl text-base font-medium {{ request()->routeIs('news.*') ? 'bg-brand-primary/10 text-brand-primary font-bold' : 'text-brand-text hover:bg-brand-cream' }}">
                 Berita & Edukasi Skincare
+            </a>
+
+            <a href="{{ route('contact.index') }}" 
+               class="block px-4 py-3 rounded-xl text-base font-medium {{ request()->routeIs('contact.*') ? 'bg-brand-primary/10 text-brand-primary font-bold' : 'text-brand-text hover:bg-brand-cream' }}">
+                Kontak & Customer Support
             </a>
 
             <div class="pt-4 border-t border-brand-border space-y-2">
@@ -195,8 +222,10 @@
                     <ul class="space-y-2.5 text-sm">
                         <li><a href="{{ route('skin-check.index') }}" class="text-brand-creamAlt/70 hover:text-white transition-colors">AI Skin Check</a></li>
                         <li><a href="{{ route('products.index') }}" class="text-brand-creamAlt/70 hover:text-white transition-colors">Katalog Skincare</a></li>
+                        <li><a href="{{ route('pembelian.index') }}" class="text-emerald-400 font-bold hover:text-white transition-colors">🛍️ Detail Pembelian Produk</a></li>
                         <li><a href="{{ route('consultation.index') }}" class="text-brand-creamAlt/70 hover:text-white transition-colors">Konsultasi Dokter Spesialis</a></li>
                         <li><a href="{{ route('news.index') }}" class="text-brand-creamAlt/70 hover:text-white transition-colors">Berita & Edukasi Kulit</a></li>
+                        <li><a href="{{ route('contact.index') }}" class="text-brand-creamAlt/70 hover:text-white transition-colors">Kontak Kami</a></li>
                     </ul>
                 </div>
 
@@ -216,6 +245,10 @@
                 <div>
                     <h3 class="text-sm font-bold uppercase tracking-wider text-white mb-4">Hubungi Kami</h3>
                     <div class="space-y-3 text-sm text-brand-creamAlt/70">
+                        <p class="flex items-center gap-2">
+                            <span class="text-emerald-400 font-bold">WhatsApp:</span>
+                            <a href="https://wa.me/6285282784356" target="_blank" rel="noopener" class="text-white hover:text-emerald-400 font-bold">085282784356</a>
+                        </p>
                         <p class="flex items-start gap-2">
                             <svg class="w-5 h-5 text-brand-primary shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
                             <span>Jl. Raya Plalangan Plosowahyu Km. 3, Kec. Lamongan, Kab. Lamongan, Jawa Timur 62218 (Kampus UMLA)</span>

@@ -213,6 +213,35 @@
 
                     <p class="text-xs text-brand-textAlt mb-4">Pesan langsung ke official store URSKYND:</p>
 
+                    <div class="space-y-3 mb-5">
+                        <!-- Direct Official WhatsApp Order -->
+                        <a href="https://wa.me/6285282784356?text={{ rawurlencode('Halo Admin URSKYND, saya mau pesan produk ' . $product->name . ' (' . $product->formatted_price . '). Apakah promo dan stok masih tersedia?') }}" 
+                           target="_blank" 
+                           rel="noopener"
+                           class="w-full flex items-center justify-between p-3.5 bg-emerald-50 hover:bg-emerald-600 hover:text-white rounded-xl border border-emerald-300 transition-colors group">
+                            <div class="flex items-center gap-3">
+                                <span class="text-lg">💬</span>
+                                <div class="text-left">
+                                    <p class="text-xs font-bold text-emerald-950 group-hover:text-white">Pesan via WhatsApp Resmi</p>
+                                    <p class="text-[10px] text-emerald-700 group-hover:text-white/90">Chat CS (085282784356) &bull; Respon Cepat &amp; Bisa COD</p>
+                                </div>
+                            </div>
+                            <span class="text-xs font-bold">&rarr;</span>
+                        </a>
+
+                        <!-- Detail Pembelian & Paket Promo Bundling -->
+                        <a href="{{ route('pembelian.index') }}" 
+                           class="w-full flex items-center justify-between p-3.5 bg-brand-cream hover:bg-brand-primary hover:text-white rounded-xl border border-brand-border transition-colors group">
+                            <div class="flex items-center gap-3">
+                                <span class="text-lg">🛍️</span>
+                                <div class="text-left">
+                                    <p class="text-xs font-bold">Halaman Detail Pembelian &amp; Paket Bundling</p>
+                                    <p class="text-[10px] text-brand-textAlt group-hover:text-white/80">Lihat paket hemat diskon s/d 35% &amp; gratis ongkir</p>
+                                </div>
+                            </div>
+                            <span class="text-xs font-bold">&rarr;</span>
+                        </a>
+
                         <a href="https://urskynd.com/produk" target="_blank" class="w-full flex items-center justify-between p-3.5 bg-brand-cream hover:bg-brand-primary hover:text-white rounded-xl border border-brand-border transition-colors group">
                             <div class="flex items-center gap-3">
                                 <span class="text-lg">✨</span>
@@ -229,7 +258,7 @@
                                 <span class="text-lg">🧡</span>
                                 <div class="text-left">
                                     <p class="text-xs font-bold">URSKYND Official di Shopee</p>
-                                    <p class="text-[10px] text-brand-textAlt group-hover:text-white/80">Gratis Ongkir & Promo Voucher</p>
+                                    <p class="text-[10px] text-brand-textAlt group-hover:text-white/80">Gratis Ongkir &amp; Promo Voucher</p>
                                 </div>
                             </div>
                             <span class="text-xs font-bold">&rarr;</span>

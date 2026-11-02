@@ -20,6 +20,10 @@ Route::get('/skin-check', [\App\Http\Controllers\SkinAnalysisController::class, 
 Route::get('/products', [\App\Http\Controllers\ProductController::class, 'index'])->name('products.index');
 Route::get('/products/{product}', [\App\Http\Controllers\ProductController::class, 'show'])->name('products.show');
 
+// Public Product Purchase Details / Landing Order Page (DVN Reference Style)
+Route::get('/detail-pembelian', [\App\Http\Controllers\OrderLandingController::class, 'index'])->name('pembelian.index');
+Route::post('/detail-pembelian/order', [\App\Http\Controllers\OrderLandingController::class, 'storeOrder'])->name('pembelian.order');
+
 // Public Consultation Menu & Submission
 Route::get('/konsultasi', [\App\Http\Controllers\ConsultationController::class, 'index'])->name('consultation.index');
 Route::post('/konsultasi', [\App\Http\Controllers\ConsultationController::class, 'store'])->name('consultation.store');
@@ -27,6 +31,10 @@ Route::post('/konsultasi', [\App\Http\Controllers\ConsultationController::class,
 // Public News & Skincare Articles Menu
 Route::get('/berita', [\App\Http\Controllers\NewsController::class, 'index'])->name('news.index');
 Route::get('/berita/{slug}', [\App\Http\Controllers\NewsController::class, 'show'])->name('news.show');
+
+// Public Contact Feature
+Route::get('/kontak', [\App\Http\Controllers\ContactController::class, 'index'])->name('contact.index');
+Route::post('/kontak', [\App\Http\Controllers\ContactController::class, 'store'])->name('contact.store');
 
 // Authenticated User Dashboard
 Route::get('/dashboard', \App\Http\Controllers\DashboardController::class)
