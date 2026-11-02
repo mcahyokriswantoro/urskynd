@@ -1,24 +1,23 @@
 <x-dynamic-component :component="auth()->check() ? 'app-layout' : 'public-layout'">
     <div class="max-w-6xl mx-auto px-4 sm:px-6" x-data="{
         selectedPackage: 'Paket Best Seller - Complete Radiant Glow (Rp 299.000)',
-        hours: 11,
-        minutes: 42,
-        seconds: 35,
+        hours: 0,
+        minutes: 0,
+        seconds: 0,
         timerInterval: null,
+        updateTimer() {
+            const now = new Date();
+            const endOfDay = new Date();
+            endOfDay.setHours(23, 59, 59, 999);
+            const diff = Math.max(0, Math.floor((endOfDay.getTime() - now.getTime()) / 1000));
+            this.hours = Math.floor(diff / 3600);
+            this.minutes = Math.floor((diff % 3600) / 60);
+            this.seconds = diff % 60;
+        },
         init() {
+            this.updateTimer();
             this.timerInterval = setInterval(() => {
-                if (this.seconds > 0) {
-                    this.seconds--;
-                } else {
-                    if (this.minutes > 0) {
-                        this.minutes--;
-                        this.seconds = 59;
-                    } else if (this.hours > 0) {
-                        this.hours--;
-                        this.minutes = 59;
-                        this.seconds = 59;
-                    }
-                }
+                this.updateTimer();
             }, 1000);
         },
         selectAndScroll(pkgName) {
@@ -35,16 +34,18 @@
             <div class="flex items-center gap-3 text-center sm:text-left">
                 <span class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-xl shrink-0 animate-pulse">🔥</span>
                 <div>
-                    <p class="font-extrabold text-sm sm:text-base tracking-wide uppercase">PROMO SPESIAL HARI INI: GRATIS ONGKIR SE-INDONESIA &amp; BONUS EXCLUSIVE</p>
+                    <p class="font-extrabold text-sm sm:text-base tracking-wide uppercase">
+                        PROMO SPESIAL HARI INI ({{ \Carbon\Carbon::now()->locale('id')->isoFormat('D MMMM Y') }}): GRATIS ONGKIR SE-INDONESIA
+                    </p>
                     <p class="text-xs text-white/90">Dapatkan diskon paket hemat s/d 35% + Free Konsultasi Dokter Kulit resmi URSKYND!</p>
                 </div>
             </div>
             <div class="flex items-center gap-2 bg-black/25 px-4 py-2 rounded-xl backdrop-blur-xs border border-white/20 shrink-0">
-                <span class="text-xs font-medium uppercase tracking-wider text-rose-200">Sisa Promo:</span>
+                <span class="text-xs font-medium uppercase tracking-wider text-rose-200">Sisa Promo Hari Ini:</span>
                 <div class="font-mono font-bold text-sm sm:text-base flex items-center gap-1">
-                    <span class="bg-black/40 px-2 py-1 rounded" x-text="String(hours).padStart(2, '0')">11</span>:
-                    <span class="bg-black/40 px-2 py-1 rounded" x-text="String(minutes).padStart(2, '0')">42</span>:
-                    <span class="bg-black/40 px-2 py-1 rounded" x-text="String(seconds).padStart(2, '0')">35</span>
+                    <span class="bg-black/40 px-2 py-1 rounded" x-text="String(hours).padStart(2, '0')">00</span>:
+                    <span class="bg-black/40 px-2 py-1 rounded" x-text="String(minutes).padStart(2, '0')">00</span>:
+                    <span class="bg-black/40 px-2 py-1 rounded" x-text="String(seconds).padStart(2, '0')">00</span>
                 </div>
             </div>
         </div>
