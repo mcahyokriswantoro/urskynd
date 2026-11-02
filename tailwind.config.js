@@ -9,6 +9,11 @@ export default {
         './resources/views/**/*.blade.php',
     ],
 
+    // Kolom grid dinamis di halaman /detail-pembelian (jumlah item diatur admin)
+    safelist: [
+        { pattern: /grid-cols-(1|2|3|4)/, variants: ['sm', 'md'] },
+    ],
+
     theme: {
         extend: {
             colors: {

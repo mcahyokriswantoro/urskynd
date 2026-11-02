@@ -80,6 +80,11 @@ Route::middleware('auth')->group(function () {
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [\App\Http\Controllers\AdminDashboardController::class, 'index'])->name('dashboard');
 
+    // Detail Pembelian page editor
+    Route::get('/detail-pembelian', [\App\Http\Controllers\AdminPurchasePageController::class, 'edit'])->name('pembelian.edit');
+    Route::put('/detail-pembelian', [\App\Http\Controllers\AdminPurchasePageController::class, 'update'])->name('pembelian.update');
+    Route::post('/detail-pembelian/reset', [\App\Http\Controllers\AdminPurchasePageController::class, 'reset'])->name('pembelian.reset');
+
     // Products Management
     Route::resource('products', \App\Http\Controllers\AdminProductController::class)->except(['show']);
 

@@ -1,6 +1,24 @@
+@php
+    use App\Models\PageContent;
+    use App\Support\PurchasePageDefaults as PPD;
+
+    $g = $content['general'];
+    $pr = $content['problem'];
+    $waNumber = $g['whatsapp_number'];
+    $waDisplay = $g['whatsapp_display'] ?: $waNumber;
+    $paymentMethods = PPD::lines($g['payment_methods']);
+    $qrisImg = PageContent::imageUrl($g['qris_image'] ?? 'images/qris-urskynd.jpg');
+    $qrisMerchant = $g['qris_merchant'] ?? 'URSKYND SKINCARE';
+    $qrisNmid = $g['qris_nmid'] ?? 'ID1026569298288';
+    $defaultPackage = collect($packages)->firstWhere('popular', true) ?? ($packages[0] ?? null);
+    $checkIcon = '<svg class="w-5 h-5 text-emerald-600 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>';
+    $waIcon = '<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.711 2.598 2.664-.698c.969.586 1.761.882 2.796.883 3.182 0 5.768-2.587 5.768-5.766.001-3.18-2.585-5.77-5.768-5.77zm0-2.172c4.379 0 7.938 3.558 7.938 7.938 0 4.38-3.559 7.939-7.938 7.939-1.341 0-2.604-.337-3.712-.927l-4.319 1.132 1.155-4.215c-.687-1.162-1.062-2.502-1.062-3.929 0-4.38 3.559-7.938 7.938-7.938z"/></svg>';
+@endphp
+
 <x-dynamic-component :component="auth()->check() ? 'app-layout' : 'public-layout'">
     <div class="max-w-6xl mx-auto px-4 sm:px-6" x-data="{
-        selectedPackage: 'Paket Best Seller - Complete Radiant Glow (Rp 299.000)',
+        selectedPackage: @js($defaultPackage ? $defaultPackage['name'] . ' (' . $defaultPackage['formatted_price'] . ')' : ''),
+        qrisZoomOpen: false,
         hours: 0,
         minutes: 0,
         seconds: 0,
@@ -29,17 +47,30 @@
         }
     }">
 
+        @auth
+            @if(auth()->user()->isAdmin())
+                <div class="mb-4 flex justify-end">
+                    <a href="{{ route('admin.pembelian.edit') }}" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-900 text-white text-xs font-bold shadow-soft hover:bg-black">
+                        ✏️ Edit Halaman Ini (Admin)
+                    </a>
+                </div>
+            @endif
+        @endauth
+
         <!-- Urgent Flash Sale Banner -->
+        @if($g['banner_title'] || $g['banner_subtitle'])
         <div class="mb-8 p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-red-600 via-rose-600 to-brand-primary text-white shadow-soft-lg flex flex-col sm:flex-row items-center justify-between gap-4">
             <div class="flex items-center gap-3 text-center sm:text-left">
                 <span class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-xl shrink-0 animate-pulse">🔥</span>
                 <div>
                     <p class="font-extrabold text-sm sm:text-base tracking-wide uppercase">
-                        PROMO SPESIAL HARI INI ({{ \Carbon\Carbon::now()->locale('id')->isoFormat('D MMMM Y') }}): GRATIS ONGKIR SE-INDONESIA
+                        {{ $g['banner_title'] }}
+                        <span class="normal-case font-semibold text-white/80">({{ \Carbon\Carbon::now()->locale('id')->isoFormat('D MMMM Y') }})</span>
                     </p>
-                    <p class="text-xs text-white/90">Dapatkan diskon paket hemat s/d 35% + Free Konsultasi Dokter Kulit resmi URSKYND!</p>
+                    <p class="text-xs text-white/90">{{ $g['banner_subtitle'] }}</p>
                 </div>
             </div>
+            @if($g['show_countdown'])
             <div class="flex items-center gap-2 bg-black/25 px-4 py-2 rounded-xl backdrop-blur-xs border border-white/20 shrink-0">
                 <span class="text-xs font-medium uppercase tracking-wider text-rose-200">Sisa Promo Hari Ini:</span>
                 <div class="font-mono font-bold text-sm sm:text-base flex items-center gap-1">
@@ -48,52 +79,45 @@
                     <span class="bg-black/40 px-2 py-1 rounded" x-text="String(seconds).padStart(2, '0')">00</span>
                 </div>
             </div>
+            @endif
         </div>
+        @endif
 
         <!-- Hero Header -->
         <div class="text-center max-w-3xl mx-auto mb-12">
+            @if($g['hero_badge'])
             <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-brand-primary/10 text-brand-primary text-xs font-bold uppercase tracking-wider mb-4 border border-brand-primary/20">
                 <span class="w-2 h-2 rounded-full bg-brand-primary animate-pulse"></span>
-                Official Store &bull; Detail Pembelian Produk Asli
+                {{ $g['hero_badge'] }}
             </span>
+            @endif
             <h1 class="text-3xl sm:text-4xl md:text-5xl font-serif font-bold text-brand-text mb-4 leading-tight">
-                Paket Skincare Klinis <span class="text-brand-primary">URSKYND</span> Asli Bergaransi
+                {{ $g['hero_title'] }} <span class="text-brand-primary">{{ $g['hero_highlight'] }}</span> {{ $g['hero_title_suffix'] }}
             </h1>
             <p class="text-brand-textAlt text-sm sm:text-base leading-relaxed mb-6">
-                Rawat kulit wajah kusam, flek hitam, jerawat, dan perbaiki skin barrier dengan produk formulasi dermatologis berteknologi AI. 100% Terdaftar BPOM, Halal, dan didampingi konsultasi dokter spesialis.
+                {{ $g['hero_description'] }}
             </p>
-            
+
+            @if($heroImg = PageContent::imageUrl($g['hero_image']))
+                <div class="mb-8 rounded-3xl overflow-hidden border border-brand-border shadow-soft-lg">
+                    <img src="{{ $heroImg }}" alt="{{ $g['hero_title'] }}" class="w-full max-h-[420px] object-cover">
+                </div>
+            @endif
+
             <!-- Quick Trust Pillars -->
-            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-4xl mx-auto text-left">
+            @if(count($content['trust']))
+            <div class="grid grid-cols-2 sm:grid-cols-{{ min(4, count($content['trust'])) }} gap-3 max-w-4xl mx-auto text-left">
+                @foreach($content['trust'] as $t)
                 <div class="p-3 bg-white rounded-xl border border-brand-border/70 shadow-xs flex items-center gap-2.5">
-                    <span class="text-xl">🛡️</span>
+                    <span class="text-xl">{{ $t['icon'] }}</span>
                     <div>
-                        <p class="text-xs font-bold text-brand-text">100% Original</p>
-                        <p class="text-[10px] text-brand-textAlt">Barcode Resmi BPOM</p>
+                        <p class="text-xs font-bold text-brand-text">{{ $t['title'] }}</p>
+                        <p class="text-[10px] text-brand-textAlt">{{ $t['subtitle'] }}</p>
                     </div>
                 </div>
-                <div class="p-3 bg-white rounded-xl border border-brand-border/70 shadow-xs flex items-center gap-2.5">
-                    <span class="text-xl">🚚</span>
-                    <div>
-                        <p class="text-xs font-bold text-brand-text">Bisa Bayar COD</p>
-                        <p class="text-[10px] text-brand-textAlt">Bayar Saat Paket Tiba</p>
-                    </div>
-                </div>
-                <div class="p-3 bg-white rounded-xl border border-brand-border/70 shadow-xs flex items-center gap-2.5">
-                    <span class="text-xl">👩‍⚕️</span>
-                    <div>
-                        <p class="text-xs font-bold text-brand-text">Free Dokter Chat</p>
-                        <p class="text-[10px] text-brand-textAlt">Konsultasi Terpandu</p>
-                    </div>
-                </div>
-                <div class="p-3 bg-white rounded-xl border border-brand-border/70 shadow-xs flex items-center gap-2.5">
-                    <span class="text-xl">✨</span>
-                    <div>
-                        <p class="text-xs font-bold text-brand-text">Garansi Tukar</p>
-                        <p class="text-[10px] text-brand-textAlt">Jika Rusak / Cacat</p>
-                    </div>
-                </div>
+                @endforeach
             </div>
+            @endif
         </div>
 
         <!-- Problem & Solution Card -->
@@ -104,21 +128,17 @@
                         Pernahkah Anda Mengalami Ini?
                     </span>
                     <h2 class="text-2xl sm:text-3xl font-serif font-bold text-brand-text mt-3 mb-4">
-                        Sudah Coba Berbagai Skincare Tapi Hasilnya Belum Kelihatan?
+                        {{ $pr['title'] }}
                     </h2>
                     <p class="text-sm text-brand-textAlt leading-relaxed mb-4">
-                        Seringkali skincare di pasaran tidak memberikan hasil karena kandungannya tidak sesuai tipe kulit atau bahan aktifnya tidak stabil. Hati-hati juga terhadap maraknya skincare non-BPOM tanpa legalitas resmi!
+                        {{ $pr['description'] }}
                     </p>
                     <ul class="space-y-2.5 text-xs sm:text-sm text-brand-text">
+                        @foreach(PPD::lines($pr['points']) as $point)
                         <li class="flex items-start gap-2 text-rose-600 font-medium">
-                            <span class="font-bold">✕</span> Kulit wajah kusam dan belang akibat paparan sinar UV matahari.
+                            <span class="font-bold">✕</span> {{ $point }}
                         </li>
-                        <li class="flex items-start gap-2 text-rose-600 font-medium">
-                            <span class="font-bold">✕</span> Skin barrier rusak, kulit mudah merah, perih, dan mengelupas.
-                        </li>
-                        <li class="flex items-start gap-2 text-rose-600 font-medium">
-                            <span class="font-bold">✕</span> Bekas jerawat PIE/PIH dan noda hitam membandel yang sulit pudar.
-                        </li>
+                        @endforeach
                     </ul>
                 </div>
 
@@ -127,79 +147,89 @@
                         Solusi Nyata Dari URSKYND
                     </span>
                     <h3 class="text-xl font-bold text-brand-text mt-3 mb-3">
-                        Formulasi Klinis + Teknologi Cerdas AI Skin Companion
+                        {{ $pr['solution_title'] }}
                     </h3>
                     <p class="text-xs sm:text-sm text-brand-textAlt leading-relaxed mb-4">
-                        URSKYND dirancang khusus untuk kulit tropis Indonesia dengan bahan aktif berkualitas tinggi seperti <em>Pure Niacinamide, Hyaluronic Acid Multi-Molecular, Ceramide Complex</em>, dan UV Filter spektrum luas.
+                        {{ $pr['solution_description'] }}
                     </p>
                     <div class="space-y-2 text-xs sm:text-sm text-brand-text">
+                        @foreach(PPD::lines($pr['solution_points']) as $point)
                         <div class="flex items-center gap-2 text-emerald-700 font-medium">
-                            <svg class="w-5 h-5 text-emerald-600 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
-                            <span>Tekstur ringan, cepat meresap, dan non-comedogenic (tidak menyumbat pori).</span>
+                            {!! $checkIcon !!}
+                            <span>{{ $point }}</span>
                         </div>
-                        <div class="flex items-center gap-2 text-emerald-700 font-medium">
-                            <svg class="w-5 h-5 text-emerald-600 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
-                            <span>Dermatologically Tested untuk kulit sensitif sekalipun.</span>
-                        </div>
-                        <div class="flex items-center gap-2 text-emerald-700 font-medium">
-                            <svg class="w-5 h-5 text-emerald-600 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
-                            <span>Aman digunakan pria dan wanita usia 15 tahun ke atas.</span>
-                        </div>
+                        @endforeach
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- Paket Bundling Showcase -->
+        @if(count($packages))
         <div class="mb-14" id="paket-section">
             <div class="text-center max-w-2xl mx-auto mb-8">
                 <span class="text-xs font-bold uppercase tracking-wider text-brand-primary bg-brand-primary/10 px-3 py-1 rounded-full">
                     Pilihan Paket Promo Spesial
                 </span>
                 <h2 class="text-2xl sm:text-4xl font-serif font-bold text-brand-text mt-3 mb-2">
-                    Pilih Paket Perawatan Terbaik Anda
+                    {{ $g['packages_title'] }}
                 </h2>
                 <p class="text-sm text-brand-textAlt">
-                    Pesan hari ini untuk mendapatkan harga promo bundling, gratis ongkos kirim, dan bonus spesial.
+                    {{ $g['packages_subtitle'] }}
                 </p>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-{{ min(3, count($packages)) }} gap-6">
                 @foreach($packages as $pkg)
                     <div class="bg-white rounded-3xl p-6 sm:p-7 border-2 transition-all flex flex-col justify-between relative {{ $pkg['popular'] ? 'border-brand-primary shadow-soft-lg ring-4 ring-brand-primary/10' : 'border-brand-border shadow-soft hover:shadow-soft-lg' }}">
-                        
+
                         @if($pkg['popular'])
-                            <div class="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-gradient-to-r from-brand-primary to-amber-600 text-white text-[11px] font-extrabold px-4 py-1 rounded-full shadow-sm uppercase tracking-wider flex items-center gap-1">
+                            <div class="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-gradient-to-r from-brand-primary to-amber-600 text-white text-[11px] font-extrabold px-4 py-1 rounded-full shadow-sm uppercase tracking-wider flex items-center gap-1 whitespace-nowrap z-10">
                                 <span>⭐ Paling Populer &amp; Terlaris ⭐</span>
                             </div>
                         @endif
 
                         <div>
-                            <div class="flex items-center justify-between mb-3">
+                            @if($pkg['image_url'])
+                                <div class="-mx-2 -mt-2 mb-4 h-44 rounded-2xl overflow-hidden bg-brand-cream/40 border border-brand-border/60">
+                                    <img src="{{ $pkg['image_url'] }}" alt="{{ $pkg['name'] }}" class="w-full h-full object-cover hover:scale-105 transition-transform duration-300">
+                                </div>
+                            @endif
+
+                            <div class="flex items-center justify-between gap-2 mb-3">
+                                @if($pkg['tag'])
                                 <span class="text-xs font-bold px-2.5 py-1 rounded-lg {{ $pkg['popular'] ? 'bg-brand-primary/15 text-brand-primary' : 'bg-brand-cream text-brand-textAlt' }}">
                                     {{ $pkg['tag'] }}
                                 </span>
+                                @endif
+                                @if($pkg['badge'])
                                 <span class="text-xs font-extrabold px-2 py-0.5 rounded-full bg-red-100 text-red-700">
                                     {{ $pkg['badge'] }}
                                 </span>
+                                @endif
                             </div>
 
                             <h3 class="text-xl font-serif font-bold text-brand-text mb-2">{{ $pkg['name'] }}</h3>
 
                             <!-- Price Display -->
                             <div class="my-4 p-3 bg-brand-cream/60 rounded-2xl border border-brand-border/60">
-                                <p class="text-xs text-brand-textAlt line-through">{{ $pkg['formatted_original_price'] }}</p>
+                                @if($pkg['formatted_original_price'] && $pkg['original_price'] > $pkg['price'])
+                                    <p class="text-xs text-brand-textAlt line-through">{{ $pkg['formatted_original_price'] }}</p>
+                                @endif
                                 <div class="flex items-baseline gap-2">
                                     <span class="text-2xl sm:text-3xl font-extrabold text-brand-primary">{{ $pkg['formatted_price'] }}</span>
                                     <span class="text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md">HEMAT BANGET</span>
                                 </div>
+                                @if($pkg['free_shipping'])
                                 <p class="text-[11px] font-semibold text-brand-textAlt mt-1 flex items-center gap-1">
                                     <svg class="w-3.5 h-3.5 text-emerald-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
                                     {{ $pkg['free_shipping'] }}
                                 </p>
+                                @endif
                             </div>
 
                             <!-- Included Items -->
+                            @if(count($pkg['items']))
                             <p class="text-xs font-bold text-brand-text uppercase tracking-wider mb-2">Isi Paket &amp; Bonus:</p>
                             <ul class="space-y-2 text-xs text-brand-textAlt mb-6">
                                 @foreach($pkg['items'] as $item)
@@ -209,23 +239,24 @@
                                     </li>
                                 @endforeach
                             </ul>
+                            @endif
                         </div>
 
                         <!-- Action Buttons -->
                         <div class="space-y-2 pt-4 border-t border-brand-border/60">
-                            <button type="button" 
-                                    @click="selectAndScroll('{{ $pkg['name'] }} ({{ $pkg['formatted_price'] }})')"
+                            <button type="button"
+                                    @click="selectAndScroll(@js($pkg['name'] . ' (' . $pkg['formatted_price'] . ')'))"
                                     class="w-full py-3 px-4 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all shadow-soft {{ $pkg['popular'] ? 'bg-brand-primary text-white hover:bg-brand-primaryAlt' : 'bg-brand-text text-white hover:bg-black' }}">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
                                 <span>Pesan Paket Ini (Form Cepat)</span>
                             </button>
 
-                            <a href="https://wa.me/6285282784356?text={{ rawurlencode($pkg['wa_message']) }}" 
-                               target="_blank" 
+                            <a href="https://wa.me/{{ $waNumber }}?text={{ rawurlencode($pkg['wa_message'] ?: 'Halo Admin URSKYND, saya mau pesan ' . $pkg['name'] . ' (' . $pkg['formatted_price'] . ').') }}"
+                               target="_blank"
                                rel="noopener"
                                class="w-full py-2.5 px-3 rounded-xl border border-emerald-600 text-emerald-700 bg-emerald-50 hover:bg-emerald-600 hover:text-white font-bold text-xs flex items-center justify-center gap-2 transition-colors">
-                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.711 2.598 2.664-.698c.969.586 1.761.882 2.796.883 3.182 0 5.768-2.587 5.768-5.766.001-3.18-2.585-5.77-5.768-5.77zm0-2.172c4.379 0 7.938 3.558 7.938 7.938 0 4.38-3.559 7.939-7.938 7.939-1.341 0-2.604-.337-3.712-.927l-4.319 1.132 1.155-4.215c-.687-1.162-1.062-2.502-1.062-3.929 0-4.38 3.559-7.938 7.938-7.938z"/></svg>
-                                <span>Order via WhatsApp (CS 085282784356)</span>
+                                {!! $waIcon !!}
+                                <span>Order via WhatsApp (CS {{ $waDisplay }})</span>
                             </a>
                         </div>
 
@@ -233,67 +264,45 @@
                 @endforeach
             </div>
         </div>
+        @endif
 
         <!-- Lineup Produk Showcase -->
+        @if(count($content['products']))
         <div class="bg-white rounded-3xl p-6 sm:p-8 border border-brand-border shadow-soft mb-14">
             <div class="text-center max-w-xl mx-auto mb-8">
                 <span class="text-xs font-bold uppercase tracking-wider text-brand-primary bg-brand-primary/10 px-3 py-1 rounded-full">
                     Kandungan &amp; Manfaat Produk
                 </span>
-                <h2 class="text-2xl font-serif font-bold text-brand-text mt-2">Katalog Produk Resmi URSKYND</h2>
-                <p class="text-xs text-brand-textAlt">Diformulasikan secara sinergis untuk hasil perawatan kulit yang komprehensif.</p>
+                <h2 class="text-2xl font-serif font-bold text-brand-text mt-2">{{ $g['products_title'] }}</h2>
+                <p class="text-xs text-brand-textAlt">{{ $g['products_subtitle'] }}</p>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <!-- Product 1 -->
+            <div class="grid grid-cols-1 md:grid-cols-{{ min(3, count($content['products'])) }} gap-6">
+                @foreach($content['products'] as $prod)
                 <div class="p-4 rounded-2xl bg-brand-cream/30 border border-brand-border flex flex-col justify-between">
                     <div>
                         <div class="h-44 w-full rounded-xl overflow-hidden bg-white mb-4 border border-brand-border flex items-center justify-center">
-                            <img src="{{ asset('images/products/lineup.jpeg') }}" alt="URSKYND Face Wash" class="h-full w-full object-cover hover:scale-105 transition-transform duration-300">
+                            @if($img = PageContent::imageUrl($prod['image'] ?? null))
+                                <img src="{{ $img }}" alt="{{ $prod['name'] }}" class="h-full w-full object-cover hover:scale-105 transition-transform duration-300">
+                            @else
+                                <span class="text-4xl">🧴</span>
+                            @endif
                         </div>
-                        <span class="text-[10px] font-bold uppercase text-brand-primary bg-brand-primary/10 px-2 py-0.5 rounded">Langkah 1: Cleanser</span>
-                        <h4 class="font-bold text-sm text-brand-text mt-1">URSKYND Foaming Face Wash (100ml)</h4>
-                        <p class="text-xs text-brand-textAlt mt-1">Membersihkan debu, sebum, dan polusi hingga ke dalam pori tanpa membuat kulit kesat atau tertarik.</p>
+                        @if($prod['step'])
+                            <span class="text-[10px] font-bold uppercase text-brand-primary bg-brand-primary/10 px-2 py-0.5 rounded">{{ $prod['step'] }}</span>
+                        @endif
+                        <h4 class="font-bold text-sm text-brand-text mt-1">{{ $prod['name'] }}</h4>
+                        <p class="text-xs text-brand-textAlt mt-1">{{ $prod['description'] }}</p>
                     </div>
                     <div class="mt-4 pt-3 border-t border-brand-border/60 flex items-center justify-between">
-                        <span class="font-bold text-sm text-brand-primary">Rp 98.000</span>
+                        <span class="font-bold text-sm text-brand-primary">{{ !empty($prod['price']) ? PPD::rupiah($prod['price']) : '' }}</span>
                         <a href="{{ route('products.index') }}" class="text-xs font-bold text-brand-text hover:text-brand-primary">Lihat Detail &rarr;</a>
                     </div>
                 </div>
-
-                <!-- Product 2 -->
-                <div class="p-4 rounded-2xl bg-brand-cream/30 border border-brand-border flex flex-col justify-between">
-                    <div>
-                        <div class="h-44 w-full rounded-xl overflow-hidden bg-white mb-4 border border-brand-border flex items-center justify-center">
-                            <img src="{{ asset('images/products/serum.jpeg') }}" alt="URSKYND Face Serum" class="h-full w-full object-cover hover:scale-105 transition-transform duration-300">
-                        </div>
-                        <span class="text-[10px] font-bold uppercase text-brand-primary bg-brand-primary/10 px-2 py-0.5 rounded">Langkah 2: Treatment</span>
-                        <h4 class="font-bold text-sm text-brand-text mt-1">URSKYND Brightening Face Serum (30ml)</h4>
-                        <p class="text-xs text-brand-textAlt mt-1">Serum konsentrat tinggi untuk memudarkan noda hitam, mencerahkan warna kulit kusam, dan merangsang kolagen.</p>
-                    </div>
-                    <div class="mt-4 pt-3 border-t border-brand-border/60 flex items-center justify-between">
-                        <span class="font-bold text-sm text-brand-primary">Rp 189.000</span>
-                        <a href="{{ route('products.index') }}" class="text-xs font-bold text-brand-text hover:text-brand-primary">Lihat Detail &rarr;</a>
-                    </div>
-                </div>
-
-                <!-- Product 3 -->
-                <div class="p-4 rounded-2xl bg-brand-cream/30 border border-brand-border flex flex-col justify-between">
-                    <div>
-                        <div class="h-44 w-full rounded-xl overflow-hidden bg-white mb-4 border border-brand-border flex items-center justify-center">
-                            <img src="{{ asset('images/products/sunscreen.jpeg') }}" alt="URSKYND Sunscreen" class="h-full w-full object-cover hover:scale-105 transition-transform duration-300">
-                        </div>
-                        <span class="text-[10px] font-bold uppercase text-brand-primary bg-brand-primary/10 px-2 py-0.5 rounded">Langkah 3: Protection</span>
-                        <h4 class="font-bold text-sm text-brand-text mt-1">URSKYND UV Sunscreen SPF 50+ PA++++ (50ml)</h4>
-                        <p class="text-xs text-brand-textAlt mt-1">Proteksi maksimal dari bahaya UV A/B &amp; blue light. Formula tidak berminyak, no whitecast, dan nyaman sepanjang hari.</p>
-                    </div>
-                    <div class="mt-4 pt-3 border-t border-brand-border/60 flex items-center justify-between">
-                        <span class="font-bold text-sm text-brand-primary">Rp 119.000</span>
-                        <a href="{{ route('products.index') }}" class="text-xs font-bold text-brand-text hover:text-brand-primary">Lihat Detail &rarr;</a>
-                    </div>
-                </div>
+                @endforeach
             </div>
         </div>
+        @endif
 
         <!-- Form Pemesanan Cepat & Instan -->
         <div class="bg-white rounded-3xl p-6 sm:p-10 border-2 border-brand-primary/30 shadow-soft-lg mb-14" id="order-form-section">
@@ -302,15 +311,15 @@
                     <span class="w-12 h-12 rounded-2xl bg-brand-primary/10 text-brand-primary flex items-center justify-center mx-auto mb-3 text-2xl">
                         📝
                     </span>
-                    <h2 class="text-2xl sm:text-3xl font-serif font-bold text-brand-text">Formulir Pemesanan Cepat</h2>
+                    <h2 class="text-2xl sm:text-3xl font-serif font-bold text-brand-text">{{ $g['order_title'] }}</h2>
                     <p class="text-xs sm:text-sm text-brand-textAlt mt-1">
-                        Isi form di bawah ini untuk mengonfirmasi order Anda. Pesanan akan otomatis diteruskan ke WhatsApp Admin Resmi URSKYND (<strong>085282784356</strong>) untuk proses pengiriman.
+                        {{ $g['order_description'] }} (<strong>{{ $waDisplay }}</strong>)
                     </p>
                 </div>
 
                 @if(session('success'))
                     <div class="mb-6 p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs sm:text-sm font-semibold flex items-center gap-2">
-                        <svg class="w-5 h-5 text-emerald-600 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
+                        {!! $checkIcon !!}
                         <span>{{ session('success') }}</span>
                     </div>
                 @endif
@@ -337,7 +346,7 @@
                         <select name="package_name" x-model="selectedPackage" class="w-full px-4 py-3 rounded-xl border-brand-border bg-brand-cream/30 text-brand-text font-medium text-sm focus:border-brand-primary focus:ring-brand-primary/20" required>
                             @foreach($packages as $pkg)
                                 <option value="{{ $pkg['name'] }} ({{ $pkg['formatted_price'] }})">
-                                    {{ $pkg['name'] }} — {{ $pkg['formatted_price'] }} ({{ $pkg['tag'] }})
+                                    {{ $pkg['name'] }} — {{ $pkg['formatted_price'] }}{{ $pkg['tag'] ? ' (' . $pkg['tag'] . ')' : '' }}
                                 </option>
                             @endforeach
                         </select>
@@ -359,25 +368,48 @@
                         </div>
                     </div>
 
-                    <!-- Metode Pembayaran -->
+                    <!-- Metode Pembayaran & QRIS -->
                     <div>
                         <label class="block text-xs font-bold text-brand-text uppercase tracking-wider mb-2">
                             Metode Pembayaran <span class="text-red-500">*</span>
                         </label>
-                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div class="grid grid-cols-1 sm:grid-cols-{{ min(3, max(1, count($paymentMethods))) }} gap-3 mb-4">
+                            @foreach($paymentMethods as $idx => $method)
                             <label class="p-3 rounded-xl border border-brand-border bg-brand-cream/30 hover:border-brand-primary cursor-pointer flex items-center gap-2.5">
-                                <input type="radio" name="payment_method" value="COD (Bayar di Tempat)" checked class="text-brand-primary focus:ring-brand-primary">
-                                <span class="text-xs font-bold text-brand-text">COD (Bayar di Tempat)</span>
+                                <input type="radio" name="payment_method" value="{{ $method }}" @checked(old('payment_method') ? old('payment_method') === $method : $idx === 0) class="text-brand-primary focus:ring-brand-primary">
+                                <span class="text-xs font-bold text-brand-text">{{ $method }}</span>
                             </label>
-                            <label class="p-3 rounded-xl border border-brand-border bg-brand-cream/30 hover:border-brand-primary cursor-pointer flex items-center gap-2.5">
-                                <input type="radio" name="payment_method" value="Transfer Bank (BCA/Mandiri/BRI)" class="text-brand-primary focus:ring-brand-primary">
-                                <span class="text-xs font-bold text-brand-text">Transfer Bank</span>
-                            </label>
-                            <label class="p-3 rounded-xl border border-brand-border bg-brand-cream/30 hover:border-brand-primary cursor-pointer flex items-center gap-2.5">
-                                <input type="radio" name="payment_method" value="E-Wallet / QRIS Instan" class="text-brand-primary focus:ring-brand-primary">
-                                <span class="text-xs font-bold text-brand-text">QRIS / E-Wallet</span>
-                            </label>
+                            @endforeach
                         </div>
+
+                        @if($qrisImg)
+                        <div class="p-4 sm:p-5 rounded-2xl bg-brand-cream/40 border border-brand-border flex flex-col sm:flex-row items-center gap-5">
+                            <button type="button" @click="qrisZoomOpen = true" class="group relative w-44 sm:w-48 bg-white p-2.5 rounded-2xl border border-brand-border shadow-xs shrink-0 overflow-hidden cursor-pointer">
+                                <img src="{{ $qrisImg }}" alt="QRIS {{ $qrisMerchant }}" class="w-full h-auto rounded-lg object-contain">
+                                <span class="mt-1.5 block text-[10px] font-bold text-brand-primary group-hover:underline">🔍 Klik untuk perbesar QRIS</span>
+                            </button>
+                            <div class="text-center sm:text-left space-y-2">
+                                <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-bold">
+                                    <span>✅</span> Pembayaran Resmi QRIS Nasional (GPN)
+                                </div>
+                                <h4 class="text-sm sm:text-base font-extrabold text-brand-text">{{ $qrisMerchant }}</h4>
+                                @if($qrisNmid)
+                                    <p class="text-xs font-mono text-brand-textAlt">NMID: <strong>{{ $qrisNmid }}</strong></p>
+                                @endif
+                                <p class="text-xs text-brand-textAlt leading-relaxed">
+                                    Kami <strong>tidak melayani COD</strong>. Silakan scan kode QRIS di samping menggunakan aplikasi <strong>M-Banking</strong> (BCA, Mandiri, BRI, BNI, BSI, dll) atau <strong>E-Wallet</strong> (GoPay, OVO, DANA, ShopeePay, LinkAja), lalu lampirkan bukti bayar saat konfirmasi ke WhatsApp Admin.
+                                </p>
+                                <div class="pt-1 flex flex-wrap items-center justify-center sm:justify-start gap-2">
+                                    <button type="button" @click="qrisZoomOpen = true" class="px-3 py-1.5 rounded-xl bg-brand-primary text-white text-xs font-bold hover:bg-brand-primaryAlt transition-colors">
+                                        Perbesar Kode QRIS
+                                    </button>
+                                    <a href="{{ $qrisImg }}" download="QRIS-URSKYND-SKINCARE.jpg" class="px-3 py-1.5 rounded-xl border border-brand-border bg-white text-brand-text text-xs font-bold hover:bg-brand-cream transition-colors">
+                                        ⬇️ Simpan Gambar QRIS
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        @endif
                     </div>
 
                     <!-- Alamat Pengiriman -->
@@ -398,8 +430,8 @@
 
                     <!-- Submit Button -->
                     <button type="submit" class="w-full py-4 px-6 bg-gradient-to-r from-emerald-600 to-teal-700 text-white font-bold rounded-2xl hover:from-emerald-700 hover:to-teal-800 transition-all shadow-soft-lg flex items-center justify-center gap-2 text-sm sm:text-base cursor-pointer">
-                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.711 2.598 2.664-.698c.969.586 1.761.882 2.796.883 3.182 0 5.768-2.587 5.768-5.766.001-3.18-2.585-5.77-5.768-5.77zm0-2.172c4.379 0 7.938 3.558 7.938 7.938 0 4.38-3.559 7.939-7.938 7.939-1.341 0-2.604-.337-3.712-.927l-4.319 1.132 1.155-4.215c-.687-1.162-1.062-2.502-1.062-3.929 0-4.38 3.559-7.938 7.938-7.938z"/></svg>
-                        <span>PESAN SEKARANG VIA WHATSAPP (085282784356)</span>
+                        {!! str_replace('w-4 h-4', 'w-5 h-5', $waIcon) !!}
+                        <span>PESAN SEKARANG VIA WHATSAPP ({{ $waDisplay }})</span>
                     </button>
 
                     <p class="text-[11px] text-center text-brand-textAlt">
@@ -410,126 +442,109 @@
         </div>
 
         <!-- Testimoni & Social Proof -->
+        @if(count($content['testimonials']))
         <div class="mb-14">
             <div class="text-center max-w-xl mx-auto mb-8">
                 <span class="text-xs font-bold uppercase tracking-wider text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full">
                     Kisah Nyata Pelanggan
                 </span>
-                <h2 class="text-2xl sm:text-3xl font-serif font-bold text-brand-text mt-2">Paket Sampai, Ini Kata Mereka</h2>
+                <h2 class="text-2xl sm:text-3xl font-serif font-bold text-brand-text mt-2">{{ $g['testimonials_title'] }}</h2>
                 <p class="text-xs text-brand-textAlt">Ulasan langsung dari pengguna URSKYND di seluruh Indonesia.</p>
             </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+            <div class="grid grid-cols-1 sm:grid-cols-{{ min(3, count($content['testimonials'])) }} gap-6">
+                @foreach($content['testimonials'] as $t)
                 <div class="bg-white p-6 rounded-2xl border border-brand-border shadow-soft flex flex-col justify-between">
                     <div>
                         <div class="flex items-center gap-1 text-amber-400 mb-3 text-sm">
-                            ★★★★★
+                            {{ str_repeat('★', (int) ($t['rating'] ?? 5)) }}<span class="text-brand-border">{{ str_repeat('★', 5 - (int) ($t['rating'] ?? 5)) }}</span>
                         </div>
                         <p class="text-xs sm:text-sm text-brand-text leading-relaxed italic mb-4">
-                            "Awalnya ragu karena sering gonta-ganti skincare jerawat ga sembuh. Pas coba Paket 2 Complete Radiance, seminggu pertama kemerahan mereda banget, skin barrier makin kuat. Pelayanannya lewat WA 085282784356 juga ramah dan fast respon!"
+                            "{{ $t['text'] }}"
                         </p>
                     </div>
                     <div class="flex items-center gap-3 pt-3 border-t border-brand-border/60">
-                        <div class="w-9 h-9 rounded-full bg-brand-primary/10 text-brand-primary font-bold flex items-center justify-center text-xs">
-                            DR
-                        </div>
+                        @if($photo = PageContent::imageUrl($t['photo'] ?? null))
+                            <img src="{{ $photo }}" alt="{{ $t['name'] }}" class="w-9 h-9 rounded-full object-cover border border-brand-border">
+                        @else
+                            <div class="w-9 h-9 rounded-full bg-brand-primary/10 text-brand-primary font-bold flex items-center justify-center text-xs">
+                                {{ collect(preg_split('/\s+/', preg_replace('/^(dr\.|drg\.)\s*/i', '', $t['name'])))->filter()->take(2)->map(fn ($w) => mb_strtoupper(mb_substr($w, 0, 1)))->join('') }}
+                            </div>
+                        @endif
                         <div>
-                            <p class="text-xs font-bold text-brand-text">dr. Dinda R.</p>
-                            <p class="text-[10px] text-brand-textAlt">Surabaya &bull; Verified Buyer</p>
+                            <p class="text-xs font-bold text-brand-text">{{ $t['name'] }}</p>
+                            <p class="text-[10px] text-brand-textAlt">{{ $t['location'] ? $t['location'] . ' • ' : '' }}Verified Buyer</p>
                         </div>
                     </div>
                 </div>
-
-                <div class="bg-white p-6 rounded-2xl border border-brand-border shadow-soft flex flex-col justify-between">
-                    <div>
-                        <div class="flex items-center gap-1 text-amber-400 mb-3 text-sm">
-                            ★★★★★
-                        </div>
-                        <p class="text-xs sm:text-sm text-brand-text leading-relaxed italic mb-4">
-                            "Paket tiba cepat cuma 2 hari via J&amp;T COD. Packing rapi, dapat pouch eksklusif dan gratis konsultasi dokter. Serumnya ringan ga bikin minyakan sama sekali. Recommended banget buat usia 30-an ke atas!"
-                        </p>
-                    </div>
-                    <div class="flex items-center gap-3 pt-3 border-t border-brand-border/60">
-                        <div class="w-9 h-9 rounded-full bg-brand-primary/10 text-brand-primary font-bold flex items-center justify-center text-xs">
-                            SN
-                        </div>
-                        <div>
-                            <p class="text-xs font-bold text-brand-text">Siti Nurjanah</p>
-                            <p class="text-[10px] text-brand-textAlt">Bandung &bull; Verified Buyer</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="bg-white p-6 rounded-2xl border border-brand-border shadow-soft flex flex-col justify-between">
-                    <div>
-                        <div class="flex items-center gap-1 text-amber-400 mb-3 text-sm">
-                            ★★★★★
-                        </div>
-                        <p class="text-xs sm:text-sm text-brand-text leading-relaxed italic mb-4">
-                            "Sunscreen-nya juara, ga whitecast dan ga perih di mata. Saya pesan Paket Ultimate Flawless bareng teman sekantor, dapat gratis ongkir dan bonus konsultasi dokter. Bener-bener puas!"
-                        </p>
-                    </div>
-                    <div class="flex items-center gap-3 pt-3 border-t border-brand-border/60">
-                        <div class="w-9 h-9 rounded-full bg-brand-primary/10 text-brand-primary font-bold flex items-center justify-center text-xs">
-                            AW
-                        </div>
-                        <div>
-                            <p class="text-xs font-bold text-brand-text">Anisa Wardani</p>
-                            <p class="text-[10px] text-brand-textAlt">Jakarta Selatan &bull; Verified Buyer</p>
-                        </div>
-                    </div>
-                </div>
+                @endforeach
             </div>
         </div>
+        @endif
 
         <!-- FAQ Section -->
+        @if(count($content['faqs']))
         <div class="bg-white rounded-3xl p-6 sm:p-8 border border-brand-border shadow-soft mb-16">
             <div class="text-center max-w-xl mx-auto mb-8">
                 <span class="text-xs font-bold uppercase tracking-wider text-brand-primary bg-brand-primary/10 px-3 py-1 rounded-full">
                     Tanya Jawab
                 </span>
-                <h2 class="text-2xl font-serif font-bold text-brand-text mt-2">Pertanyaan Seputar Pemesanan</h2>
+                <h2 class="text-2xl font-serif font-bold text-brand-text mt-2">{{ $g['faq_title'] }}</h2>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs sm:text-sm" x-data="{ activeFaq: null }">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs sm:text-sm">
+                @foreach($content['faqs'] as $faq)
                 <div class="p-4 rounded-2xl bg-brand-cream/30 border border-brand-border/60">
-                    <p class="font-bold text-brand-text mb-1">Q: Apakah bisa Bayar di Tempat (COD)?</p>
+                    <p class="font-bold text-brand-text mb-1">Q: {{ $faq['question'] }}</p>
                     <p class="text-brand-textAlt leading-relaxed">
-                        A: Ya, kami melayani sistem pembayaran COD ke hampir seluruh wilayah kecamatan di Indonesia. Anda cukup membayar saat kurir mengantarkan paket ke rumah Anda.
+                        A: {{ $faq['answer'] }}
                     </p>
                 </div>
+                @endforeach
+            </div>
+        </div>
+        @endif
 
-                <div class="p-4 rounded-2xl bg-brand-cream/30 border border-brand-border/60">
-                    <p class="font-bold text-brand-text mb-1">Q: Apakah produk URSKYND Asli &amp; Resmi BPOM?</p>
-                    <p class="text-brand-textAlt leading-relaxed">
-                        A: 100% Asli dan Terdaftar Resmi di BPOM RI. Setiap kemasan dilengkapi barcode dan segel keamanan eksklusif dari pabrik resmi.
-                    </p>
+        <!-- Modal Perbesar QRIS -->
+        @if($qrisImg)
+        <div x-show="qrisZoomOpen"
+             x-transition.opacity
+             style="display: none;"
+             @keydown.escape.window="qrisZoomOpen = false"
+             class="fixed inset-0 z-50 bg-black/75 backdrop-blur-xs flex items-center justify-center p-4">
+            <div @click.outside="qrisZoomOpen = false" class="bg-white rounded-3xl max-w-md w-full p-5 sm:p-6 shadow-2xl border border-brand-border text-center">
+                <div class="flex items-center justify-between mb-3 pb-2 border-b border-brand-border/60">
+                    <div class="text-left">
+                        <p class="text-xs font-extrabold text-brand-text">{{ $qrisMerchant }}</p>
+                        @if($qrisNmid)
+                            <p class="text-[11px] font-mono text-brand-textAlt">NMID: {{ $qrisNmid }}</p>
+                        @endif
+                    </div>
+                    <button type="button" @click="qrisZoomOpen = false" class="p-1.5 rounded-xl text-brand-textAlt hover:text-brand-text hover:bg-brand-cream">
+                        ✕
+                    </button>
                 </div>
-
-                <div class="p-4 rounded-2xl bg-brand-cream/30 border border-brand-border/60">
-                    <p class="font-bold text-brand-text mb-1">Q: Berapa lama waktu pengiriman paket?</p>
-                    <p class="text-brand-textAlt leading-relaxed">
-                        A: Untuk wilayah Pulau Jawa biasanya 1-2 hari kerja. Di luar Pulau Jawa berkisar antara 2-4 hari kerja tergantung kota tujuan dan ekspedisi pilihan.
-                    </p>
-                </div>
-
-                <div class="p-4 rounded-2xl bg-brand-cream/30 border border-brand-border/60">
-                    <p class="font-bold text-brand-text mb-1">Q: Bagaimana cara klaim konsultasi dokter gratis?</p>
-                    <p class="text-brand-textAlt leading-relaxed">
-                        A: Setelah pemesanan paket terkonfirmasi via WhatsApp <strong>085282784356</strong>, Customer Service kami akan memberikan voucher akses telekonsultasi dokter gratis di menu Konsultasi website.
-                    </p>
+                <img src="{{ $qrisImg }}" alt="QRIS {{ $qrisMerchant }}" class="w-full max-h-[70vh] object-contain rounded-2xl border border-brand-border/60 mx-auto mb-4">
+                <div class="flex items-center justify-center gap-2">
+                    <a href="{{ $qrisImg }}" download="QRIS-URSKYND-SKINCARE.jpg" class="px-4 py-2.5 rounded-xl bg-brand-primary text-white text-xs font-bold hover:bg-brand-primaryAlt">
+                        ⬇️ Simpan Gambar QRIS
+                    </a>
+                    <button type="button" @click="qrisZoomOpen = false" class="px-4 py-2.5 rounded-xl border border-brand-border text-xs font-bold text-brand-text hover:bg-brand-cream">
+                        Tutup
+                    </button>
                 </div>
             </div>
         </div>
+        @endif
 
         <!-- Sticky Floating WhatsApp CTA on Mobile & Desktop -->
         <div class="fixed bottom-4 right-4 z-40 flex flex-col items-end gap-2">
-            <a href="https://wa.me/6285282784356?text={{ rawurlencode('Halo Admin URSKYND, saya mau konsultasi dan pesan paket produk URSKYND. Mohon infonya ya!') }}" 
-               target="_blank" 
+            <a href="https://wa.me/{{ $waNumber }}?text={{ rawurlencode('Halo Admin URSKYND, saya mau konsultasi dan pesan paket produk URSKYND. Mohon infonya ya!') }}"
+               target="_blank"
                rel="noopener"
                class="inline-flex items-center gap-2.5 px-4 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-full shadow-soft-lg font-bold text-xs sm:text-sm hover:scale-105 transition-all">
-                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.711 2.598 2.664-.698c.969.586 1.761.882 2.796.883 3.182 0 5.768-2.587 5.768-5.766.001-3.18-2.585-5.77-5.768-5.77zm0-2.172c4.379 0 7.938 3.558 7.938 7.938 0 4.38-3.559 7.939-7.938 7.939-1.341 0-2.604-.337-3.712-.927l-4.319 1.132 1.155-4.215c-.687-1.162-1.062-2.502-1.062-3.929 0-4.38 3.559-7.938 7.938-7.938z"/></svg>
-                <span>Chat Admin / Order WA: 085282784356</span>
+                {!! str_replace('w-4 h-4', 'w-5 h-5', $waIcon) !!}
+                <span>Chat Admin / Order WA: {{ $waDisplay }}</span>
             </a>
         </div>
 

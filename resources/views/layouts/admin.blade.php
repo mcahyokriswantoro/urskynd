@@ -66,6 +66,12 @@
                     Kelola Berita
                 </a>
 
+                <a href="{{ route('admin.pembelian.edit') }}" 
+                   class="flex items-center px-3.5 py-2.5 rounded-xl text-sm font-medium transition-colors {{ request()->routeIs('admin.pembelian.*') ? 'bg-[#9A6A52] text-white font-semibold shadow-md shadow-[#9A6A52]/20' : 'text-slate-300 hover:bg-slate-800/80 hover:text-white' }}">
+                    <svg class="w-5 h-5 mr-3 {{ request()->routeIs('admin.pembelian.*') ? 'text-white' : 'text-[#E8B496]' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
+                    Halaman Pembelian
+                </a>
+
                 <a href="{{ route('admin.doctors.index') }}" 
                    class="flex items-center px-3.5 py-2.5 rounded-xl text-sm font-medium transition-colors {{ request()->routeIs('admin.doctors.*') ? 'bg-[#9A6A52] text-white font-semibold shadow-md shadow-[#9A6A52]/20' : 'text-slate-300 hover:bg-slate-800/80 hover:text-white' }}">
                     <svg class="w-5 h-5 mr-3 {{ request()->routeIs('admin.doctors.*') ? 'text-white' : 'text-[#E8B496]' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
@@ -219,6 +225,7 @@
                         <a href="{{ route('admin.dashboard') }}" @click="adminDrawerOpen = false" class="block px-3 py-2 rounded-lg bg-[#9A6A52] text-white font-medium">Dashboard Overview</a>
                         <a href="{{ route('admin.products.index') }}" @click="adminDrawerOpen = false" class="block px-3 py-2 rounded-lg hover:bg-slate-800 text-slate-300">Kelola Produk</a>
                         <a href="{{ route('admin.articles.index') }}" @click="adminDrawerOpen = false" class="block px-3 py-2 rounded-lg hover:bg-slate-800 text-slate-300">Kelola Berita</a>
+                        <a href="{{ route('admin.pembelian.edit') }}" @click="adminDrawerOpen = false" class="block px-3 py-2 rounded-lg hover:bg-slate-800 text-slate-300">Halaman Pembelian</a>
                         <a href="{{ route('admin.doctors.index') }}" @click="adminDrawerOpen = false" class="block px-3 py-2 rounded-lg hover:bg-slate-800 text-slate-300">Dokter & Konsultasi</a>
                         <a href="{{ route('admin.dashboard') }}#users-section" @click="adminDrawerOpen = false" class="block px-3 py-2 rounded-lg hover:bg-slate-800 text-slate-300">Manajemen Pengguna</a>
                         <a href="{{ route('admin.dashboard') }}#analyses-section" @click="adminDrawerOpen = false" class="block px-3 py-2 rounded-lg hover:bg-slate-800 text-slate-300">Log AI Skin Analyses</a>
