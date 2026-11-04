@@ -91,3 +91,4 @@ return new class extends Migration
         User::where('email', 'mitra@urskynd.test')->forceDelete();
     }
 };
+

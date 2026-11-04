@@ -19,6 +19,7 @@ Route::get('/skin-check', [\App\Http\Controllers\SkinAnalysisController::class, 
 // Public Products Catalog & Details
 Route::get('/products', [\App\Http\Controllers\ProductController::class, 'index'])->name('products.index');
 Route::get('/products/{product}', [\App\Http\Controllers\ProductController::class, 'show'])->name('products.show');
+Route::post('/products/{product}/order', [\App\Http\Controllers\ProductController::class, 'orderProduct'])->name('products.order');
 
 // Public Product Purchase Details / Landing Order Page (DVN Reference Style)
 Route::get('/detail-pembelian', [\App\Http\Controllers\OrderLandingController::class, 'index'])->name('pembelian.index');
@@ -107,6 +108,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::post('/affiliates/sales', [\App\Http\Controllers\AdminAffiliateController::class, 'storeSale'])->name('affiliates.sales.store');
     Route::patch('/affiliates/sales/{sale}/status', [\App\Http\Controllers\AdminAffiliateController::class, 'updateSaleStatus'])->name('affiliates.sales.status');
     Route::patch('/affiliates/withdrawals/{withdrawal}/status', [\App\Http\Controllers\AdminAffiliateController::class, 'updateWithdrawalStatus'])->name('affiliates.withdrawals.status');
+    Route::patch('/affiliates/products/{product}/commission', [\App\Http\Controllers\AdminAffiliateController::class, 'updateProductCommission'])->name('affiliates.products.commission');
     Route::patch('/affiliates/{user}', [\App\Http\Controllers\AdminAffiliateController::class, 'updateAffiliate'])->name('affiliates.update');
 });
 

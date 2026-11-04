@@ -1,13 +1,13 @@
 <x-app-layout>
     <div class="space-y-6" x-data="{
-        copied: false,
+        copiedKey: null,
         editBankOpen: false,
-        selectedPkgPrice: @js($packages[0]['price'] ?? 185000),
-        selectedPkgName: @js($packages[0]['name'] ?? 'Paket Glowing Starter'),
-        copyLink(url) {
+        copyLink(url, key = 'main') {
             navigator.clipboard.writeText(url);
-            this.copied = true;
-            setTimeout(() => this.copied = false, 2500);
+            this.copiedKey = key;
+            setTimeout(() => {
+                if (this.copiedKey === key) this.copiedKey = null;
+            }, 2200);
         }
     }">
 
@@ -15,11 +15,11 @@
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
                 <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-primary/10 text-brand-primary text-xs font-bold uppercase tracking-wider mb-2">
-                    🤝 Program Kemitraan Resmi
+                    🤝 URSKYND Affiliate Center
                 </span>
-                <h1 class="text-2xl sm:text-3xl font-serif font-bold text-brand-text">Mitra &amp; Afiliator URSKYND</h1>
+                <h1 class="text-2xl sm:text-3xl font-serif font-bold text-brand-text">Mitra &amp; Afiliator Produk</h1>
                 <p class="text-xs sm:text-sm text-brand-textAlt mt-0.5">
-                    Promosikan produk perawatan kulit URSKYND, pantau penjualan, dan cairkan komisi Anda.
+                    Pilih produk dari katalog, bagikan link afiliasi produk Anda, dan dapatkan komisi otomatis setiap ada pembelian.
                 </p>
             </div>
         </div>
@@ -51,7 +51,7 @@
                     </div>
                     <h2 class="text-xl sm:text-2xl font-serif font-bold text-brand-text">Gabung Menjadi Mitra / Afiliator Resmi</h2>
                     <p class="text-xs sm:text-sm text-brand-textAlt mt-1">
-                        Aktifkan fitur afiliasi pada akun Anda dan dapatkan komisi <strong>10%</strong> dari setiap penjualan produk URSKYND yang dapat dicairkan ke Bank atau E-Wallet.
+                        Aktifkan fitur afiliasi pada akun Anda dan dapatkan komisi otomatis dari setiap produk URSKYND yang terjual melalui link produk Anda.
                     </p>
                 </div>
 
@@ -97,53 +97,12 @@
                 </form>
             </div>
         @else
-            <!-- DASHBOARD AKTIF MITRA / AFILIATOR -->
+            <!-- DASHBOARD AKTIF MITRA / AFILIATOR (GAYA SHOPEE AFFILIATE) -->
             @php
-                $shareUrl = route('pembelian.index', ['ref' => $user->affiliate_code]);
-                $waShareText = "Halo! Aku rekomendasikan perawatan kulit klinis resmi URSKYND (BPOM & Halal). Pesan lewat link resmi ini untuk dapat harga promo hemat s/d 35% ya:\n" . $shareUrl . "\n\n(Kode Referral: " . $user->affiliate_code . ")";
+                $bundleShareUrl = route('pembelian.index', ['ref' => $user->affiliate_code]);
             @endphp
 
-            <!-- Banner Link & Kode Afiliasi -->
-            <div class="bg-gradient-to-r from-[#9A6A52] to-[#7C523E] rounded-3xl p-6 sm:p-7 text-white shadow-soft-lg">
-                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
-                    <div class="lg:col-span-5 space-y-2">
-                        <div class="flex items-center gap-2">
-                            <span class="px-2.5 py-0.5 rounded-full bg-white/20 text-[11px] font-bold uppercase tracking-wider">
-                                Komisi Aktif: {{ rtrim(rtrim(number_format($user->commission_rate, 2), '0'), '.') }}% / Penjualan
-                            </span>
-                            <span class="px-2.5 py-0.5 rounded-full bg-emerald-400/25 border border-emerald-300/40 text-emerald-100 text-[11px] font-bold">
-                                ● Mitra Aktif
-                            </span>
-                        </div>
-                        <h2 class="text-xl sm:text-2xl font-serif font-bold">Kode Mitra: <span class="font-mono bg-black/25 px-3 py-1 rounded-xl">{{ $user->affiliate_code }}</span></h2>
-                        <p class="text-xs text-white/85 leading-relaxed">
-                            Bagikan link afiliasi di samping ke WhatsApp, Instagram, atau TikTok. Setiap pembeli yang memesan melalui link atau memasukkan kode Anda akan otomatis menambah komisi Anda!
-                        </p>
-                    </div>
-
-                    <div class="lg:col-span-7 bg-white/10 backdrop-blur-xs p-4 rounded-2xl border border-white/20 space-y-3">
-                        <label class="block text-[11px] font-bold uppercase tracking-wider text-white/80">
-                            🔗 Link Promosi Afiliasi Anda:
-                        </label>
-                        <div class="flex flex-col sm:flex-row gap-2">
-                            <input type="text" readonly value="{{ $shareUrl }}" class="flex-1 px-3.5 py-2.5 rounded-xl bg-white text-brand-text font-mono text-xs border-0 focus:ring-0">
-                            <button type="button"
-                                    @click="copyLink(@js($shareUrl))"
-                                    class="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-black text-white text-xs font-bold shrink-0 cursor-pointer transition-colors">
-                                <span x-text="copied ? '✅ Tersalin!' : '📋 Salin Link'">📋 Salin Link</span>
-                            </button>
-                            <a href="https://wa.me/?text={{ rawurlencode($waShareText) }}"
-                               target="_blank"
-                               rel="noopener"
-                               class="px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold shrink-0 text-center transition-colors">
-                                💬 Share WA
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 4 Kartu KPI Komisi -->
+            <!-- 4 Kartu KPI Utama (Saldo, Komisi, Klik & Konversi, Withdraw) -->
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div class="bg-white p-5 rounded-2xl border-2 border-emerald-500/40 shadow-soft">
                     <div class="flex items-center justify-between mb-2">
@@ -151,7 +110,7 @@
                         <span class="w-9 h-9 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center text-lg">💰</span>
                     </div>
                     <p class="text-2xl font-extrabold text-emerald-700">Rp {{ number_format($stats['balance'], 0, ',', '.') }}</p>
-                    <p class="text-[11px] text-brand-textAlt mt-1">Dapat langsung dicairkan ke rekening</p>
+                    <p class="text-[11px] text-brand-textAlt mt-1">Bisa langsung ditarik ke rekening</p>
                 </div>
 
                 <div class="bg-white p-5 rounded-2xl border border-brand-border shadow-soft">
@@ -160,16 +119,18 @@
                         <span class="w-9 h-9 rounded-xl bg-brand-primary/10 text-brand-primary flex items-center justify-center text-lg">📈</span>
                     </div>
                     <p class="text-2xl font-extrabold text-brand-text">Rp {{ number_format($stats['total_earned'], 0, ',', '.') }}</p>
-                    <p class="text-[11px] text-brand-textAlt mt-1">{{ $stats['approved_sales_count'] }} penjualan terverifikasi</p>
+                    <p class="text-[11px] text-brand-textAlt mt-1">
+                        {{ $stats['approved_sales_count'] }} pesanan selesai • {{ $stats['pending_sales_count'] }} diproses
+                    </p>
                 </div>
 
                 <div class="bg-white p-5 rounded-2xl border border-brand-border shadow-soft">
                     <div class="flex items-center justify-between mb-2">
-                        <span class="text-xs font-bold text-brand-textAlt uppercase">Menunggu Verifikasi</span>
-                        <span class="w-9 h-9 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center text-lg">⏳</span>
+                        <span class="text-xs font-bold text-brand-textAlt uppercase">Performa Klik Link</span>
+                        <span class="w-9 h-9 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center text-lg">🔗</span>
                     </div>
-                    <p class="text-2xl font-extrabold text-amber-600">Rp {{ number_format($stats['pending_commission'], 0, ',', '.') }}</p>
-                    <p class="text-[11px] text-brand-textAlt mt-1">{{ $stats['pending_sales_count'] }} pesanan sedang dicek Admin</p>
+                    <p class="text-2xl font-extrabold text-brand-text">{{ number_format($stats['total_clicks'], 0, ',', '.') }} <span class="text-xs font-semibold text-brand-textAlt">Klik</span></p>
+                    <p class="text-[11px] text-emerald-700 font-semibold mt-1">Rasio Konversi: {{ $stats['conversion_rate'] }}%</p>
                 </div>
 
                 <div class="bg-white p-5 rounded-2xl border border-brand-border shadow-soft">
@@ -182,41 +143,119 @@
                         @if($stats['pending_withdrawal'] > 0)
                             Diproses: Rp {{ number_format($stats['pending_withdrawal'], 0, ',', '.') }}
                         @else
-                            Transfer ke {{ $user->bank_name ?: 'Rekening Mitra' }}
+                            Tujuan: {{ $user->bank_name ?: 'Rekening Mitra' }}
                         @endif
                     </p>
                 </div>
             </div>
 
-            <!-- Estimasi Komisi Per Paket -->
-            @if(count($packages))
-            <div class="bg-white rounded-3xl p-5 sm:p-6 border border-brand-border shadow-soft">
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+            <!-- KATALOG LINK AFILIASI PER PRODUK (SEPERTI SHOPEE AFFILIATE) -->
+            <div class="bg-white rounded-3xl p-6 sm:p-7 border border-brand-border shadow-soft">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-6 pb-4 border-b border-brand-border/60">
                     <div>
-                        <h3 class="text-base font-bold text-brand-text">💡 Potensi Komisi Anda Per Paket Produk</h3>
-                        <p class="text-xs text-brand-textAlt">Semakin banyak paket terjual, semakin besar komisi yang bisa langsung Anda cairkan.</p>
+                        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-[11px] font-bold mb-1.5">
+                            <span>⚡</span> Pelacakan Klik &amp; Konversi Otomatis (Cookie 30 Hari)
+                        </div>
+                        <h2 class="text-xl sm:text-2xl font-serif font-bold text-brand-text">🧴 Pilih Produk &amp; Salin Link Afiliasi</h2>
+                        <p class="text-xs text-brand-textAlt">
+                            Setiap produk memiliki link afiliasi khusus dengan kode Anda (<strong class="font-mono text-brand-primary">{{ $user->affiliate_code }}</strong>). Saat pembeli klik link produk dan memesan, komisi langsung masuk otomatis!
+                        </p>
                     </div>
+                    <a href="{{ route('products.index') }}" class="px-4 py-2 rounded-xl bg-brand-cream hover:bg-brand-primary hover:text-white text-brand-text text-xs font-bold transition-colors shrink-0 self-start md:self-center">
+                        Lihat Katalog Lengkap &rarr;
+                    </a>
                 </div>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    @foreach($packages as $pkg)
-                        <div class="p-4 rounded-2xl bg-brand-cream/40 border border-brand-border flex items-center justify-between gap-3">
+
+                <!-- Grid Produk Afiliasi -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                    @foreach($affiliateProducts as $prod)
+                        @php
+                            $prodKey = 'prod_' . $prod['id'];
+                            $waProdText = "Rekomendasi skincare resmi " . $prod['name'] . " (" . $prod['formatted_price'] . ") sudah BPOM & Halal! Cek detail & pesan di sini ya:\n" . $prod['affiliate_url'];
+                        @endphp
+                        <div class="rounded-2xl border border-brand-border bg-brand-cream/25 p-4 flex flex-col justify-between hover:border-brand-primary/50 hover:shadow-soft transition-all">
                             <div>
-                                <p class="text-xs font-bold text-brand-text">{{ $pkg['name'] }}</p>
-                                <p class="text-[11px] text-brand-textAlt">Harga Paket: {{ $pkg['formatted_price'] }}</p>
+                                <!-- Gambar & Badge Komisi -->
+                                <div class="relative h-44 w-full rounded-xl overflow-hidden bg-white border border-brand-border mb-3.5 flex items-center justify-center">
+                                    @if($prod['image_url'])
+                                        <img src="{{ $prod['image_url'] }}" alt="{{ $prod['name'] }}" class="w-full h-full object-cover">
+                                    @else
+                                        <span class="text-4xl">🧴</span>
+                                    @endif
+                                    <span class="absolute top-2.5 left-2.5 px-2.5 py-1 rounded-lg bg-white/95 backdrop-blur-xs text-[10px] font-bold text-brand-text border border-brand-border/50">
+                                        {{ $prod['category'] }}
+                                    </span>
+                                    <span class="absolute bottom-2.5 right-2.5 px-2.5 py-1 rounded-lg bg-emerald-600 text-white text-[11px] font-extrabold shadow-xs">
+                                        Komisi +{{ $prod['formatted_commission'] }} ({{ rtrim(rtrim(number_format($prod['commission_rate'], 2), '0'), '.') }}%)
+                                    </span>
+                                </div>
+
+                                <h3 class="font-bold text-sm text-brand-text leading-snug mb-1">{{ $prod['name'] }}</h3>
+                                <div class="flex items-baseline justify-between mb-3">
+                                    <span class="text-xs text-brand-textAlt">Harga Jual: <strong class="text-brand-text">{{ $prod['formatted_price'] }}</strong></span>
+                                    <span class="text-xs font-bold text-emerald-700">+{{ $prod['formatted_commission'] }} / pcs</span>
+                                </div>
+
+                                <!-- Statistik Performa Produk Ini -->
+                                <div class="grid grid-cols-3 gap-1.5 p-2.5 rounded-xl bg-white border border-brand-border/70 text-center mb-3.5">
+                                    <div>
+                                        <span class="block text-[10px] text-brand-textAlt">Klik Link</span>
+                                        <span class="text-xs font-extrabold text-brand-text">{{ $prod['clicks_count'] }}</span>
+                                    </div>
+                                    <div class="border-x border-brand-border/50">
+                                        <span class="block text-[10px] text-brand-textAlt">Terjual</span>
+                                        <span class="text-xs font-extrabold text-brand-primary">{{ $prod['orders_count'] }} pcs</span>
+                                    </div>
+                                    <div>
+                                        <span class="block text-[10px] text-brand-textAlt">Komisi Cair</span>
+                                        <span class="text-[11px] font-extrabold text-emerald-700">{{ $prod['earned_commission'] }}</span>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="text-right shrink-0">
-                                <span class="block text-[10px] font-bold uppercase text-emerald-700">Komisi Anda</span>
-                                <span class="text-sm font-extrabold text-emerald-700 bg-emerald-100 px-2.5 py-1 rounded-lg inline-block mt-0.5">
-                                    +{{ $pkg['formatted_commission'] }}
-                                </span>
+
+                            <!-- Input Link Produk & Tombol Copy/Share -->
+                            <div class="space-y-2 pt-2 border-t border-brand-border/50">
+                                <input type="text" readonly value="{{ $prod['affiliate_url'] }}" class="w-full px-3 py-1.5 rounded-lg bg-white border border-brand-border text-[11px] font-mono text-brand-textAlt">
+                                <div class="grid grid-cols-2 gap-2">
+                                    <button type="button"
+                                            @click="copyLink(@js($prod['affiliate_url']), @js($prodKey))"
+                                            class="py-2 px-3 rounded-xl bg-brand-primary hover:bg-brand-primaryAlt text-white text-xs font-bold transition-colors cursor-pointer">
+                                        <span x-text="copiedKey === @js($prodKey) ? '✅ Tersalin!' : '📋 Salin Link'">📋 Salin Link</span>
+                                    </button>
+                                    <a href="https://wa.me/?text={{ rawurlencode($waProdText) }}"
+                                       target="_blank"
+                                       rel="noopener"
+                                       class="py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold text-center transition-colors">
+                                        💬 Share WA
+                                    </a>
+                                </div>
                             </div>
                         </div>
                     @endforeach
                 </div>
-            </div>
-            @endif
 
-            <!-- Grid Pencairan Komisi & Klaim Penjualan Manual -->
+                <!-- Link Paket Bundling Promo (Tambahan) -->
+                <div class="mt-6 p-4 rounded-2xl bg-gradient-to-r from-[#9A6A52] to-[#7C523E] text-white flex flex-col lg:flex-row items-center justify-between gap-4">
+                    <div class="space-y-1 text-center lg:text-left">
+                        <span class="px-2.5 py-0.5 rounded-full bg-white/20 text-[10px] font-bold uppercase tracking-wider">
+                            🎁 Link Halaman Paket Bundling Hemat (Komisi s/d Rp 38.900 / Paket)
+                        </span>
+                        <p class="text-xs text-white/90">
+                            Selain link per produk di atas, Anda juga bisa membagikan link halaman promo bundling semua paket:
+                        </p>
+                    </div>
+                    <div class="flex flex-col sm:flex-row gap-2 w-full lg:w-auto">
+                        <input type="text" readonly value="{{ $bundleShareUrl }}" class="sm:w-80 px-3 py-2 rounded-xl bg-white text-brand-text font-mono text-xs border-0">
+                        <button type="button"
+                                @click="copyLink(@js($bundleShareUrl), 'bundle')"
+                                class="px-4 py-2 rounded-xl bg-slate-900 hover:bg-black text-white text-xs font-bold shrink-0 cursor-pointer">
+                            <span x-text="copiedKey === 'bundle' ? '✅ Tersalin!' : '📋 Salin Link Paket'">📋 Salin Link Paket</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Grid Pencairan Komisi & Info Sistem Pelacakan Otomatis -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <!-- Kolom 1: Form Pencairan Komisi (Withdraw) -->
                 <div class="bg-white rounded-3xl p-6 border border-brand-border shadow-soft flex flex-col justify-between">
@@ -226,7 +265,7 @@
                                 <h3 class="text-lg font-serif font-bold text-brand-text">🏦 Cairkan Komisi (Withdraw)</h3>
                                 <p class="text-xs text-brand-textAlt">Tarik saldo komisi ke rekening Bank atau E-Wallet Anda (Min. Rp 20.000).</p>
                             </div>
-                            <button type="button" @click="editBankOpen = !editBankOpen" class="text-xs font-bold text-brand-primary hover:underline">
+                            <button type="button" @click="editBankOpen = !editBankOpen" class="text-xs font-bold text-brand-primary hover:underline cursor-pointer">
                                 ⚙️ Ubah Rekening
                             </button>
                         </div>
@@ -306,86 +345,76 @@
                     </div>
                 </div>
 
-                <!-- Kolom 2: Form Klaim / Catat Penjualan Mitra -->
-                <div class="bg-white rounded-3xl p-6 border border-brand-border shadow-soft">
-                    <div class="mb-4 pb-3 border-b border-brand-border/60">
-                        <h3 class="text-lg font-serif font-bold text-brand-text">🛍️ Klaim / Catat Penjualan Anda</h3>
-                        <p class="text-xs text-brand-textAlt">
-                            Penjualan melalui link afiliasi tercatat otomatis. Jika pembeli memesan manual lewat Anda, catat di sini untuk diverifikasi Admin.
-                        </p>
+                <!-- Kolom 2: Cara Kerja Pelacakan Otomatis (Ala Shopee Affiliate) -->
+                <div class="bg-white rounded-3xl p-6 border border-brand-border shadow-soft flex flex-col justify-between">
+                    <div>
+                        <div class="mb-4 pb-3 border-b border-brand-border/60 flex items-center justify-between">
+                            <div>
+                                <h3 class="text-lg font-serif font-bold text-brand-text">⚡ Cara Kerja Komisi Otomatis</h3>
+                                <p class="text-xs text-brand-textAlt">Tanpa input manual — semua penjualan terlacak otomatis dari link produk Anda.</p>
+                            </div>
+                            <span class="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-extrabold uppercase">
+                                Auto-Track Aktif
+                            </span>
+                        </div>
+
+                        <div class="space-y-3.5 text-xs">
+                            <div class="flex items-start gap-3 p-3 rounded-2xl bg-brand-cream/40 border border-brand-border/60">
+                                <span class="w-7 h-7 rounded-xl bg-brand-primary text-white font-bold flex items-center justify-center shrink-0">1</span>
+                                <div>
+                                    <p class="font-bold text-brand-text">Salin &amp; Sebarkan Link Produk</p>
+                                    <p class="text-brand-textAlt mt-0.5 leading-relaxed">
+                                        Pilih produk di atas (misal <em>Face Serum</em> atau <em>UV Sunscreen</em>) lalu klik <strong>Salin Link</strong> atau bagikan langsung dari halaman detail produk.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="flex items-start gap-3 p-3 rounded-2xl bg-brand-cream/40 border border-brand-border/60">
+                                <span class="w-7 h-7 rounded-xl bg-brand-primary text-white font-bold flex items-center justify-center shrink-0">2</span>
+                                <div>
+                                    <p class="font-bold text-brand-text">Otomatis Rekam Klik &amp; Cookie 30 Hari</p>
+                                    <p class="text-brand-textAlt mt-0.5 leading-relaxed">
+                                        Saat calon pembeli membuka link Anda, sistem langsung mencatat jumlah klik produk dan mengunci kode afiliasi Anda (<strong class="font-mono">{{ $user->affiliate_code }}</strong>) di perangkat pembeli selama 30 hari.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="flex items-start gap-3 p-3 rounded-2xl bg-brand-cream/40 border border-brand-border/60">
+                                <span class="w-7 h-7 rounded-xl bg-emerald-600 text-white font-bold flex items-center justify-center shrink-0">3</span>
+                                <div>
+                                    <p class="font-bold text-brand-text">Pembeli Checkout = Komisi Masuk Otomatis</p>
+                                    <p class="text-brand-textAlt mt-0.5 leading-relaxed">
+                                        Begitu pembeli melakukan pemesanan produk (baik langsung di halaman produk maupun paket bundling), pesanan otomatis muncul di tabel <strong>Riwayat Penjualan &amp; Komisi</strong> di bawah ini!
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-
-                    <form action="{{ route('affiliate.sales.store') }}" method="POST" class="space-y-3.5">
-                        @csrf
-                        <div>
-                            <label class="block text-xs font-bold text-brand-text uppercase tracking-wider mb-1">
-                                Paket / Produk yang Terjual <span class="text-red-500">*</span>
-                            </label>
-                            <select name="package_name"
-                                    x-model="selectedPkgName"
-                                    @change="const found = @js($packages).find(p => p.name === $event.target.value); if (found) selectedPkgPrice = found.price;"
-                                    class="w-full px-3.5 py-2.5 rounded-xl border border-brand-border bg-brand-cream/30 text-xs sm:text-sm font-medium">
-                                @foreach($packages as $pkg)
-                                    <option value="{{ $pkg['name'] }}">{{ $pkg['name'] }} ({{ $pkg['formatted_price'] }})</option>
-                                @endforeach
-                                <option value="Produk Satuan / Custom Order">Produk Satuan / Custom Order</option>
-                            </select>
-                        </div>
-
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            <div>
-                                <label class="block text-xs font-bold text-brand-text uppercase tracking-wider mb-1">
-                                    Nama Pembeli <span class="text-red-500">*</span>
-                                </label>
-                                <input type="text" name="customer_name" required placeholder="Contoh: Rina Melati" class="w-full px-3.5 py-2.5 rounded-xl border border-brand-border bg-white text-xs sm:text-sm">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-bold text-brand-text uppercase tracking-wider mb-1">
-                                    No. WhatsApp Pembeli <span class="text-red-500">*</span>
-                                </label>
-                                <input type="text" name="customer_phone" required placeholder="0812xxxxxxx" class="w-full px-3.5 py-2.5 rounded-xl border border-brand-border bg-white text-xs sm:text-sm">
-                            </div>
-                        </div>
-
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            <div>
-                                <label class="block text-xs font-bold text-brand-text uppercase tracking-wider mb-1">
-                                    Total Harga Penjualan (Rp) <span class="text-red-500">*</span>
-                                </label>
-                                <input type="number" name="sale_amount" x-model="selectedPkgPrice" min="10000" required class="w-full px-3.5 py-2.5 rounded-xl border border-brand-border bg-white text-xs sm:text-sm font-bold">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-bold text-brand-text uppercase tracking-wider mb-1">
-                                    Catatan / Bukti Order (Opsional)
-                                </label>
-                                <input type="text" name="notes" placeholder="Sudah bayar QRIS" class="w-full px-3.5 py-2.5 rounded-xl border border-brand-border bg-white text-xs sm:text-sm">
-                            </div>
-                        </div>
-
-                        <button type="submit" class="w-full py-3.5 px-5 rounded-2xl bg-brand-primary hover:bg-brand-primaryAlt text-white font-bold text-xs sm:text-sm shadow-soft transition-colors cursor-pointer">
-                            📝 Kirim Klaim Penjualan (Komisi {{ rtrim(rtrim(number_format($user->commission_rate, 2), '0'), '.') }}%)
-                        </button>
-                    </form>
                 </div>
             </div>
 
-            <!-- Tabel Riwayat Penjualan & Komisi -->
+            <!-- Tabel Riwayat Penjualan & Komisi Otomatis -->
             <div class="bg-white rounded-3xl p-6 border border-brand-border shadow-soft">
-                <h3 class="text-lg font-serif font-bold text-brand-text mb-4">📦 Riwayat Penjualan &amp; Komisi Afiliasi</h3>
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <h3 class="text-lg font-serif font-bold text-brand-text">📦 Riwayat Konversi Penjualan &amp; Komisi Otomatis</h3>
+                        <p class="text-xs text-brand-textAlt">Setiap pembelian yang berasal dari link produk Anda otomatis tercatat di sini.</p>
+                    </div>
+                </div>
                 @if($sales->isEmpty())
-                    <p class="text-xs text-brand-textAlt py-6 text-center">Belum ada transaksi penjualan afiliasi. Bagikan link promosi Anda untuk mulai meraih komisi!</p>
+                    <p class="text-xs text-brand-textAlt py-6 text-center">Belum ada konversi penjualan dari link afiliasi Anda. Bagikan link produk di atas untuk mulai meraih komisi!</p>
                 @else
                     <div class="overflow-x-auto">
                         <table class="w-full text-left border-collapse text-xs">
                             <thead>
                                 <tr class="border-b border-brand-border text-brand-textAlt uppercase">
                                     <th class="py-3 px-3">Kode Order</th>
-                                    <th class="py-3 px-3">Tanggal</th>
+                                    <th class="py-3 px-3">Waktu Order</th>
                                     <th class="py-3 px-3">Pembeli</th>
-                                    <th class="py-3 px-3">Paket / Produk</th>
+                                    <th class="py-3 px-3">Produk / Paket Terjual</th>
                                     <th class="py-3 px-3">Nilai Transaksi</th>
                                     <th class="py-3 px-3">Komisi Anda</th>
-                                    <th class="py-3 px-3">Status</th>
+                                    <th class="py-3 px-3">Status Komisi</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-brand-border/50">
@@ -397,7 +426,12 @@
                                             <p class="font-bold text-brand-text">{{ $sale->customer_name }}</p>
                                             <p class="text-[11px] text-brand-textAlt">{{ $sale->customer_phone }}</p>
                                         </td>
-                                        <td class="py-3 px-3 font-medium text-brand-text">{{ $sale->package_name }}</td>
+                                        <td class="py-3 px-3 font-medium text-brand-text">
+                                            {{ $sale->package_name }}
+                                            @if(($sale->quantity ?? 1) > 1)
+                                                <span class="px-1.5 py-0.5 rounded bg-brand-cream text-[10px] font-bold">{{ $sale->quantity }} pcs</span>
+                                            @endif
+                                        </td>
                                         <td class="py-3 px-3">{{ $sale->formatted_sale_amount }}</td>
                                         <td class="py-3 px-3 font-extrabold text-emerald-700">
                                             +{{ $sale->formatted_commission_amount }}
@@ -405,11 +439,11 @@
                                         </td>
                                         <td class="py-3 px-3">
                                             @if($sale->status === 'approved')
-                                                <span class="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-bold">✅ Disetujui (Masuk Saldo)</span>
+                                                <span class="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-bold">✅ Selesai (Masuk Saldo)</span>
                                             @elseif($sale->status === 'rejected')
-                                                <span class="px-2.5 py-1 rounded-full bg-rose-100 text-rose-800 text-[11px] font-bold">✕ Ditolak / Batal</span>
+                                                <span class="px-2.5 py-1 rounded-full bg-rose-100 text-rose-800 text-[11px] font-bold">✕ Dibatalkan</span>
                                             @else
-                                                <span class="px-2.5 py-1 rounded-full bg-amber-100 text-amber-800 text-[11px] font-bold">⏳ Menunggu Verifikasi</span>
+                                                <span class="px-2.5 py-1 rounded-full bg-amber-100 text-amber-800 text-[11px] font-bold">⏳ Menunggu Bayar QRIS</span>
                                             @endif
                                         </td>
                                     </tr>
@@ -469,4 +503,3 @@
 
     </div>
 </x-app-layout>
-

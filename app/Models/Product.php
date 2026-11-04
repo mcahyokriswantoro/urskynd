@@ -18,6 +18,7 @@ class Product extends Model
         'image',
         'size',
         'price',
+        'commission_rate',
         'badge',
         'usage_instruction',
         'status',
@@ -26,6 +27,27 @@ class Product extends Model
     public function getFormattedPriceAttribute(): string
     {
         return 'Rp ' . number_format($this->price ?? 129000, 0, ',', '.');
+    }
+
+    public function getCommissionAmountAttribute(): int
+    {
+        $rate = (float) ($this->commission_rate ?? 10);
+        return (int) round(($this->price ?? 0) * ($rate / 100));
+    }
+
+    public function getFormattedCommissionAttribute(): string
+    {
+        return 'Rp ' . number_format($this->commission_amount, 0, ',', '.');
+    }
+
+    public function affiliateClicks()
+    {
+        return $this->hasMany(AffiliateClick::class);
+    }
+
+    public function affiliateSales()
+    {
+        return $this->hasMany(AffiliateSale::class);
     }
 
     public function resolveRouteBinding($value, $field = null)

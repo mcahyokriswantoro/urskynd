@@ -4,23 +4,30 @@ namespace App\Http\Controllers;
 
 use App\Models\AffiliateSale;
 use App\Models\AffiliateWithdrawal;
+use App\Models\Product;
 use App\Models\User;
 use App\Support\PurchasePageDefaults;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\Rule;
 
 class AffiliateController extends Controller
 {
     /**
-     * Tampilkan dashboard Mitra / Afiliator.
+     * Tampilkan dashboard Mitra / Afiliator (gaya Shopee Affiliate: Link Per Produk + Pelacakan Klik & Konversi Otomatis).
      */
     public function index(Request $request)
     {
         $user = $request->user();
 
-        $sales = $user->affiliateSales()->get();
+        $sales = $user->affiliateSales()->with('product')->get();
         $withdrawals = $user->affiliateWithdrawals()->get();
+        $clicks = Schema::hasTable('affiliate_clicks') ? $user->affiliateClicks()->get() : collect();
+
+        $totalClicks = $clicks->count();
+        $totalOrders = $sales->whereIn('status', ['pending', 'approved'])->count();
+        $conversionRate = $totalClicks > 0 ? round(($totalOrders / $totalClicks) * 100, 1) : 0;
 
         $stats = [
             'balance' => (int) $user->commission_balance,
@@ -30,7 +37,44 @@ class AffiliateController extends Controller
             'pending_sales_count' => $sales->where('status', 'pending')->count(),
             'total_withdrawn' => (int) $withdrawals->where('status', 'approved')->sum('amount'),
             'pending_withdrawal' => (int) $withdrawals->where('status', 'pending')->sum('amount'),
+            'total_clicks' => $totalClicks,
+            'conversion_rate' => $conversionRate,
         ];
+
+        // Daftar Produk Katalog dengan Link Afiliasi Per Produk & Statistik Klik/Terjual masing-masing
+        $affiliateProducts = Product::with('category')
+            ->where('status', 'active')
+            ->get()
+            ->map(function (Product $product) use ($user, $sales, $clicks) {
+                $price = (int) ($product->price ?? 129000);
+                $rate = (float) ($product->commission_rate ?: $user->commission_rate ?: 10);
+                $commissionPerUnit = (int) round($price * ($rate / 100));
+
+                $productClicks = $clicks->where('product_id', $product->id)->count();
+                $productSales = $sales->where('product_id', $product->id)->whereIn('status', ['pending', 'approved']);
+                $productEarned = (int) $sales->where('product_id', $product->id)->where('status', 'approved')->sum('commission_amount');
+
+                $affiliateUrl = $user->affiliate_code
+                    ? route('products.show', ['product' => $product->slug, 'ref' => $user->affiliate_code])
+                    : route('products.show', $product->slug);
+
+                return [
+                    'id' => $product->id,
+                    'name' => $product->name,
+                    'slug' => $product->slug,
+                    'category' => $product->category->name ?? 'Skincare',
+                    'image_url' => $product->image_url,
+                    'price' => $price,
+                    'formatted_price' => PurchasePageDefaults::rupiah($price),
+                    'commission_rate' => $rate,
+                    'commission_amount' => $commissionPerUnit,
+                    'formatted_commission' => PurchasePageDefaults::rupiah($commissionPerUnit),
+                    'affiliate_url' => $affiliateUrl,
+                    'clicks_count' => $productClicks,
+                    'orders_count' => (int) $productSales->sum('quantity'),
+                    'earned_commission' => PurchasePageDefaults::rupiah($productEarned),
+                ];
+            });
 
         $purchaseContent = AdminPurchasePageController::content();
         $packages = collect($purchaseContent['packages'] ?? [])->map(function ($pkg) use ($user) {
@@ -46,7 +90,7 @@ class AffiliateController extends Controller
             ];
         })->all();
 
-        return view('affiliate.index', compact('user', 'sales', 'withdrawals', 'stats', 'packages'));
+        return view('affiliate.index', compact('user', 'sales', 'withdrawals', 'stats', 'affiliateProducts', 'packages'));
     }
 
     /**
@@ -107,46 +151,6 @@ class AffiliateController extends Controller
     }
 
     /**
-     * Catat / laporkan penjualan produk oleh afiliator untuk diverifikasi Admin.
-     */
-    public function recordSale(Request $request)
-    {
-        $user = $request->user();
-
-        if (!$user->isAffiliate() || $user->affiliate_status !== 'active') {
-            return back()->withErrors(['sale' => 'Akun mitra Anda belum aktif.']);
-        }
-
-        $validated = $request->validate([
-            'customer_name' => ['required', 'string', 'max:100'],
-            'customer_phone' => ['required', 'string', 'max:30'],
-            'package_name' => ['required', 'string', 'max:150'],
-            'sale_amount' => ['required', 'numeric', 'min:10000'],
-            'notes' => ['nullable', 'string', 'max:500'],
-        ]);
-
-        $saleAmount = (int) $validated['sale_amount'];
-        $rate = (float) ($user->commission_rate ?: 10);
-        $commissionAmount = (int) round($saleAmount * ($rate / 100));
-
-        AffiliateSale::create([
-            'affiliate_id' => $user->id,
-            'order_code' => 'ORD-' . now()->format('ymd') . '-' . strtoupper(substr(uniqid(), -5)),
-            'customer_name' => $validated['customer_name'],
-            'customer_phone' => $validated['customer_phone'],
-            'package_name' => $validated['package_name'],
-            'sale_amount' => $saleAmount,
-            'commission_rate' => $rate,
-            'commission_amount' => $commissionAmount,
-            'payment_method' => 'QRIS Resmi URSKYND',
-            'notes' => $validated['notes'] ?? null,
-            'status' => 'pending',
-        ]);
-
-        return back()->with('success', 'Laporan penjualan berhasil dikirim! Komisi sebesar Rp ' . number_format($commissionAmount, 0, ',', '.') . ' akan masuk ke saldo Anda setelah pembayaran diverifikasi Admin.');
-    }
-
-    /**
      * Ajukan pencairan saldo komisi (Withdraw).
      */
     public function requestWithdrawal(Request $request)
@@ -197,4 +201,3 @@ class AffiliateController extends Controller
         return back()->with('success', 'Permintaan pencairan komisi sebesar Rp ' . number_format($amount, 0, ',', '.') . ' berhasil diajukan! Admin akan segera memproses transfer ke rekening Anda.');
     }
 }
-

@@ -1,5 +1,18 @@
 <x-dynamic-component :component="auth()->check() ? 'app-layout' : 'public-layout'">
-    <div class="max-w-5xl mx-auto px-4 sm:px-6" x-data="{ checkoutModalOpen: false, copyToast: false }">
+    @php
+        $unitPrice = (int) ($product->price ?? 129000);
+        $affShareUrl = auth()->check() && auth()->user()->isAffiliate()
+            ? route('products.show', ['product' => $product->slug, 'ref' => auth()->user()->affiliate_code])
+            : url()->current();
+    @endphp
+    <div class="max-w-5xl mx-auto px-4 sm:px-6" x-data="{
+        checkoutModalOpen: false,
+        copyToast: false,
+        affCopyToast: false,
+        qty: 1,
+        unitPrice: @js($unitPrice),
+        formatRp(n) { return 'Rp ' + Number(n).toLocaleString('id-ID'); }
+    }">
         
         <div class="mb-6 flex items-center gap-2">
             <a href="{{ route('products.index') }}" class="inline-flex items-center gap-1.5 text-xs font-bold text-brand-primary hover:text-brand-primaryAlt transition-colors">
@@ -88,42 +101,60 @@
                         </div>
                     @endif
                     
-                    <!-- Primary Buy / Order Button -->
+                    @if(isset($detectedAffiliate) && $detectedAffiliate)
+                        <div class="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex items-center justify-between">
+                            <span>🤝 Direkomendasikan oleh Mitra Resmi: <strong>{{ $detectedAffiliate->name }}</strong></span>
+                            <span class="font-mono font-bold px-2 py-0.5 rounded bg-emerald-100">{{ $detectedAffiliate->affiliate_code }}</span>
+                        </div>
+                    @endif
+
                     @auth
-                        <button type="button" @click="checkoutModalOpen = true" class="w-full py-4 px-6 bg-brand-primary text-white font-bold rounded-2xl hover:bg-brand-primaryAlt transition-all shadow-soft flex items-center justify-center gap-2 text-sm">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
-                            <span>Beli Sekarang</span>
-                        </button>
-                    @else
-                        <button type="button" 
-                                @click="$dispatch('open-auth-modal', { 
-                                    title: 'Masuk untuk Memesan Produk', 
-                                    description: 'Silakan masuk atau buat akun baru terlebih dahulu untuk melanjutkan pemesanan {{ addslashes($product->name) }} ({{ $product->formatted_price }}).' 
-                                })" 
-                                class="w-full py-4 px-6 bg-brand-primary text-white font-bold rounded-2xl hover:bg-brand-primaryAlt transition-all shadow-soft flex items-center justify-center gap-2 text-sm">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
-                            <span>Masuk untuk Memesan / Beli Sekarang ({{ $product->formatted_price }})</span>
-                        </button>
+                        @if(auth()->user()->isAffiliate())
+                            <!-- Box Khusus Mitra Afiliator untuk Produk Ini -->
+                            <div class="p-4 rounded-2xl bg-gradient-to-r from-[#9A6A52] to-[#7C523E] text-white space-y-2.5 shadow-soft">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-[11px] font-bold uppercase tracking-wider text-white/90">🤝 Link Afiliasi Produk Ini</span>
+                                    <span class="px-2.5 py-0.5 rounded-full bg-emerald-400/25 border border-emerald-300/40 text-emerald-100 text-[11px] font-extrabold">
+                                        Komisi +{{ $product->formatted_commission }} / pcs ({{ rtrim(rtrim(number_format($product->commission_rate ?? 10, 2), '0'), '.') }}%)
+                                    </span>
+                                </div>
+                                <div class="flex gap-2">
+                                    <input type="text" readonly value="{{ $affShareUrl }}" class="flex-1 px-3 py-2 rounded-xl bg-white text-brand-text font-mono text-[11px] border-0">
+                                    <button type="button"
+                                            @click="navigator.clipboard.writeText(@js($affShareUrl)); affCopyToast = true; setTimeout(() => affCopyToast = false, 2000);"
+                                            class="px-3 py-2 rounded-xl bg-slate-900 hover:bg-black text-white text-xs font-bold shrink-0 cursor-pointer">
+                                        <span x-text="affCopyToast ? '✅ Tersalin!' : '📋 Salin'">📋 Salin</span>
+                                    </button>
+                                </div>
+                                <p class="text-[10px] text-white/80">Setiap pembeli yang klik link produk ini &amp; memesan akan otomatis tercatat ke komisi Anda (seperti Shopee Affiliate).</p>
+                            </div>
+                        @endif
                     @endauth
+
+                    <!-- Primary Buy / Order Button (Tersedia untuk Tamu & Member) -->
+                    <button type="button" @click="checkoutModalOpen = true" class="w-full py-4 px-6 bg-brand-primary text-white font-bold rounded-2xl hover:bg-brand-primaryAlt transition-all shadow-soft flex items-center justify-center gap-2 text-sm cursor-pointer">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
+                        <span>Beli Sekarang ({{ $product->formatted_price }})</span>
+                    </button>
 
                     <!-- Share & Routine Actions -->
                     <div class="grid grid-cols-2 gap-3">
                         <button type="button"
                                 @click="
-                                    navigator.clipboard.writeText(window.location.href);
+                                    navigator.clipboard.writeText(@js($affShareUrl));
                                     copyToast = true;
                                     setTimeout(() => copyToast = false, 2000);
                                 "
-                                class="py-3 px-4 rounded-xl border border-brand-border bg-white text-xs font-bold text-brand-text hover:bg-brand-cream transition-colors text-center flex items-center justify-center gap-1.5">
+                                class="py-3 px-4 rounded-xl border border-brand-border bg-white text-xs font-bold text-brand-text hover:bg-brand-cream transition-colors text-center flex items-center justify-center gap-1.5 cursor-pointer">
                             <svg class="w-4 h-4 text-brand-textAlt" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
-                            <span x-text="copyToast ? 'Link Disalin!' : 'Salin Link'">Salin Link</span>
+                            <span x-text="copyToast ? 'Link Disalin!' : 'Salin Link Produk'">Salin Link Produk</span>
                         </button>
 
-                        <a href="https://wa.me/?text={{ urlencode($product->name . ' — ' . url()->current()) }}"
+                        <a href="https://wa.me/?text={{ rawurlencode('Cek produk resmi ' . $product->name . ' (' . $product->formatted_price . ') di URSKYND: ' . $affShareUrl) }}"
                            target="_blank" rel="noopener"
                            class="py-3 px-4 rounded-xl border border-brand-border bg-white text-xs font-bold text-brand-text hover:bg-brand-cream transition-colors text-center flex items-center justify-center gap-1.5">
                             <svg class="w-4 h-4 text-emerald-600" fill="currentColor" viewBox="0 0 24 24"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.711 2.598 2.664-.698c.969.586 1.761.882 2.796.883 3.182 0 5.768-2.587 5.768-5.766.001-3.18-2.585-5.77-5.768-5.77zm0-2.172c4.379 0 7.938 3.558 7.938 7.938 0 4.38-3.559 7.939-7.938 7.939-1.341 0-2.604-.337-3.712-.927l-4.319 1.132 1.155-4.215c-.687-1.162-1.062-2.502-1.062-3.929 0-4.38 3.559-7.938 7.938-7.938z"/></svg>
-                            <span>Bagikan</span>
+                            <span>Bagikan ke WA</span>
                         </a>
                     </div>
 
@@ -179,109 +210,101 @@
             </div>
         @endif
 
-        <!-- Authenticated Purchase Modal -->
-        @auth
-            <div x-show="checkoutModalOpen" 
-                 x-transition:enter="transition ease-out duration-200"
-                 x-transition:enter-start="opacity-0"
-                 x-transition:enter-end="opacity-100"
-                 x-transition:leave="transition ease-in duration-150"
-                 x-transition:leave-start="opacity-100"
-                 x-transition:leave-end="opacity-0"
-                 class="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
-                 style="display: none;"
-                 @keydown.escape.window="checkoutModalOpen = false">
-                <div class="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl border border-brand-border"
-                     @click.outside="checkoutModalOpen = false">
-                    
-                    <div class="flex items-center justify-between mb-4 pb-3 border-b border-brand-border/50">
-                        <h3 class="font-serif font-bold text-lg text-brand-text">Pilihan Pembelian Resmi</h3>
-                        <button type="button" @click="checkoutModalOpen = false" class="text-brand-textAlt hover:text-brand-text">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                        </button>
+        <!-- Direct Product Purchase Modal (Otomatis Lacak Afiliasi + QRIS) -->
+        <div x-show="checkoutModalOpen" 
+             x-transition:enter="transition ease-out duration-200"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             x-transition:leave="transition ease-in duration-150"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0"
+             class="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
+             style="display: none;"
+             @keydown.escape.window="checkoutModalOpen = false">
+            <div class="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-7 shadow-2xl border border-brand-border max-h-[92vh] overflow-y-auto"
+                 @click.outside="checkoutModalOpen = false">
+                
+                <div class="flex items-center justify-between mb-4 pb-3 border-b border-brand-border/50">
+                    <div>
+                        <h3 class="font-serif font-bold text-lg text-brand-text">Checkout Pemesanan Resmi</h3>
+                        <p class="text-[11px] text-brand-textAlt">Pembayaran via QRIS Resmi URSKYND (Tanpa COD)</p>
                     </div>
+                    <button type="button" @click="checkoutModalOpen = false" class="text-brand-textAlt hover:text-brand-text">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                </div>
 
-                    <div class="flex items-center gap-3 p-3 bg-brand-cream/50 rounded-2xl border border-brand-border/60 mb-5">
+                <div class="flex items-center justify-between gap-3 p-3 bg-brand-cream/50 rounded-2xl border border-brand-border/60 mb-4">
+                    <div class="flex items-center gap-3 min-w-0">
                         <div class="w-12 h-12 rounded-xl bg-white overflow-hidden flex items-center justify-center shrink-0 border border-brand-border">
                             <img src="{{ $product->image_url ?? asset('images/brand-assets.jpg') }}" alt="{{ $product->name }}" class="w-full h-full object-cover">
                         </div>
-                        <div class="flex-1 min-w-0">
+                        <div class="min-w-0">
                             <p class="text-xs font-bold text-brand-text truncate">{{ $product->name }}</p>
-                            <p class="text-xs font-bold text-brand-primary">{{ $product->formatted_price }}</p>
+                            <p class="text-xs font-bold text-brand-primary" x-text="formatRp(unitPrice * qty)">{{ $product->formatted_price }}</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-1.5 shrink-0">
+                        <button type="button" @click="qty = Math.max(1, qty - 1)" class="w-7 h-7 rounded-lg bg-white border border-brand-border font-bold text-xs">-</button>
+                        <span class="w-7 text-center text-xs font-bold" x-text="qty">1</span>
+                        <button type="button" @click="qty++" class="w-7 h-7 rounded-lg bg-white border border-brand-border font-bold text-xs">+</button>
+                    </div>
+                </div>
+
+                @if(isset($detectedAffiliate) && $detectedAffiliate)
+                    <div class="mb-4 px-3 py-2 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-[11px] flex items-center justify-between">
+                        <span>🤝 Mitra Referensi Otomatis: <strong>{{ $detectedAffiliate->name }}</strong></span>
+                        <span class="font-mono font-bold">{{ $detectedAffiliate->affiliate_code }}</span>
+                    </div>
+                @endif
+
+                <form action="{{ route('products.order', $product) }}" method="POST" class="space-y-3.5">
+                    @csrf
+                    <input type="hidden" name="quantity" :value="qty">
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-[11px] font-bold text-brand-text uppercase mb-1">Nama Lengkap *</label>
+                            <input type="text" name="customer_name" value="{{ auth()->user()->name ?? '' }}" required placeholder="Contoh: Rina Melati" class="w-full px-3.5 py-2.5 rounded-xl border border-brand-border text-xs">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-bold text-brand-text uppercase mb-1">No. WhatsApp Aktif *</label>
+                            <input type="text" name="customer_phone" value="{{ auth()->user()->phone ?? '' }}" required placeholder="0812xxxxxxx" class="w-full px-3.5 py-2.5 rounded-xl border border-brand-border text-xs">
                         </div>
                     </div>
 
-                    <p class="text-xs text-brand-textAlt mb-4">Pesan langsung ke official store URSKYND:</p>
-
-                    <div class="space-y-3 mb-5">
-                        <!-- Direct Official WhatsApp Order -->
-                        <a href="https://wa.me/6285282784356?text={{ rawurlencode('Halo Admin URSKYND, saya mau pesan produk ' . $product->name . ' (' . $product->formatted_price . ') via pembayaran QRIS. Apakah promo dan stok masih tersedia?') }}" 
-                           target="_blank" 
-                           rel="noopener"
-                           class="w-full flex items-center justify-between p-3.5 bg-emerald-50 hover:bg-emerald-600 hover:text-white rounded-xl border border-emerald-300 transition-colors group">
-                            <div class="flex items-center gap-3">
-                                <span class="text-lg">💬</span>
-                                <div class="text-left">
-                                    <p class="text-xs font-bold text-emerald-950 group-hover:text-white">Pesan via WhatsApp Resmi</p>
-                                    <p class="text-[10px] text-emerald-700 group-hover:text-white/90">Chat CS (085282784356) &bull; Respon Cepat &amp; Bayar via QRIS</p>
-                                </div>
-                            </div>
-                            <span class="text-xs font-bold">&rarr;</span>
-                        </a>
-
-                        <!-- Detail Pembelian & Paket Promo Bundling -->
-                        <a href="{{ route('pembelian.index') }}" 
-                           class="w-full flex items-center justify-between p-3.5 bg-brand-cream hover:bg-brand-primary hover:text-white rounded-xl border border-brand-border transition-colors group">
-                            <div class="flex items-center gap-3">
-                                <span class="text-lg">📲</span>
-                                <div class="text-left">
-                                    <p class="text-xs font-bold">Form Pembelian, QRIS &amp; Paket Bundling</p>
-                                    <p class="text-[10px] text-brand-textAlt group-hover:text-white/80">Scan QRIS Resmi URSKYND &amp; lihat paket hemat s/d 35%</p>
-                                </div>
-                            </div>
-                            <span class="text-xs font-bold">&rarr;</span>
-                        </a>
-
-                        <a href="https://urskynd.com/produk" target="_blank" class="w-full flex items-center justify-between p-3.5 bg-brand-cream hover:bg-brand-primary hover:text-white rounded-xl border border-brand-border transition-colors group">
-                            <div class="flex items-center gap-3">
-                                <span class="text-lg">✨</span>
-                                <div class="text-left">
-                                    <p class="text-xs font-bold">URSKYND Official Web Store</p>
-                                    <p class="text-[10px] text-brand-textAlt group-hover:text-white/80">Kunjungi katalog produk resmi di urskynd.com</p>
-                                </div>
-                            </div>
-                            <span class="text-xs font-bold">&rarr;</span>
-                        </a>
-
-                        <a href="https://shopee.co.id" target="_blank" class="w-full flex items-center justify-between p-3.5 bg-brand-cream hover:bg-brand-primary hover:text-white rounded-xl border border-brand-border transition-colors group">
-                            <div class="flex items-center gap-3">
-                                <span class="text-lg">🧡</span>
-                                <div class="text-left">
-                                    <p class="text-xs font-bold">URSKYND Official di Shopee</p>
-                                    <p class="text-[10px] text-brand-textAlt group-hover:text-white/80">Gratis Ongkir &amp; Promo Voucher</p>
-                                </div>
-                            </div>
-                            <span class="text-xs font-bold">&rarr;</span>
-                        </a>
-
-                        <a href="https://tokopedia.com" target="_blank" class="w-full flex items-center justify-between p-3.5 bg-brand-cream hover:bg-brand-primary hover:text-white rounded-xl border border-brand-border transition-colors group">
-                            <div class="flex items-center gap-3">
-                                <span class="text-lg">💚</span>
-                                <div class="text-left">
-                                    <p class="text-xs font-bold">URSKYND Official di Tokopedia</p>
-                                    <p class="text-[10px] text-brand-textAlt group-hover:text-white/80">Official Store Terverifikasi</p>
-                                </div>
-                            </div>
-                            <span class="text-xs font-bold">&rarr;</span>
-                        </a>
+                    <div>
+                        <label class="block text-[11px] font-bold text-brand-text uppercase mb-1">Alamat Lengkap Pengiriman *</label>
+                        <textarea name="shipping_address" rows="2" required placeholder="Nama jalan, nomor rumah, RT/RW, Kecamatan, Kota, Kode Pos..." class="w-full px-3.5 py-2 rounded-xl border border-brand-border text-xs">{{ auth()->user()->address ?? '' }}</textarea>
                     </div>
 
-                    <button type="button" @click="checkoutModalOpen = false" class="w-full py-2.5 text-center text-xs text-brand-textAlt hover:text-brand-text">
+                    @if(!empty($qrisImg))
+                        <div class="p-3 rounded-2xl bg-brand-cream/40 border border-brand-border flex items-center gap-3">
+                            <img src="{{ $qrisImg }}" alt="QRIS {{ $qrisMerchant ?? 'URSKYND' }}" class="w-24 h-auto rounded-lg border border-brand-border bg-white p-1 shrink-0">
+                            <div class="text-[11px] space-y-1">
+                                <p class="font-extrabold text-brand-text">{{ $qrisMerchant ?? 'URSKYND SKINCARE' }}</p>
+                                <p class="font-mono text-[10px] text-brand-textAlt">NMID: {{ $qrisNmid ?? 'ID1026569298288' }}</p>
+                                <p class="text-brand-textAlt leading-snug">Scan QRIS ini dengan M-Banking / E-Wallet sebesar <strong class="text-brand-primary" x-text="formatRp(unitPrice * qty)"></strong>.</p>
+                                <a href="{{ $qrisImg }}" download="QRIS-URSKYND.jpg" class="inline-block text-brand-primary font-bold hover:underline">⬇️ Unduh Gambar QRIS</a>
+                            </div>
+                        </div>
+                    @endif
+
+                    <button type="submit" class="w-full py-3.5 px-5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs sm:text-sm shadow-soft flex items-center justify-center gap-2 cursor-pointer">
+                        <span>💬 Konfirmasi Pesanan via WhatsApp</span>
+                    </button>
+                </form>
+
+                <div class="mt-4 pt-3 border-t border-brand-border/50 flex items-center justify-between text-xs">
+                    <a href="{{ route('pembelian.index') }}" class="font-bold text-brand-primary hover:underline">
+                        🛍️ Lihat Paket Bundling Hemat s/d 35% &rarr;
+                    </a>
+                    <button type="button" @click="checkoutModalOpen = false" class="text-brand-textAlt hover:text-brand-text">
                         Tutup
                     </button>
                 </div>
             </div>
-        @endauth
+        </div>
 
     </div>
 </x-dynamic-component>

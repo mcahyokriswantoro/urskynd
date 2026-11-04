@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Middleware\TrackAffiliateReferral;
 use App\Models\AffiliateSale;
 use App\Models\PageContent;
 use App\Models\User;
@@ -16,16 +17,7 @@ class OrderLandingController extends Controller
      */
     public function index(Request $request)
     {
-        if ($request->filled('ref')) {
-            $refCode = strtoupper(preg_replace('/[^A-Za-z0-9]/', '', (string) $request->query('ref')));
-            if ($refCode) {
-                $request->session()->put('affiliate_ref', $refCode);
-            }
-        }
-
-        $affiliateRef = $request->query('ref')
-            ? strtoupper(preg_replace('/[^A-Za-z0-9]/', '', (string) $request->query('ref')))
-            : $request->session()->get('affiliate_ref');
+        $affiliateRef = TrackAffiliateReferral::currentCode($request);
 
         $content = AdminPurchasePageController::content();
 
@@ -60,19 +52,11 @@ class OrderLandingController extends Controller
         $content = AdminPurchasePageController::content();
         $adminWhatsapp = $content['general']['whatsapp_number'];
 
-        // Cek kode afiliasi dari input atau session
-        $rawRef = $validated['affiliate_code'] ?? $request->session()->get('affiliate_ref');
-        $refCode = $rawRef ? strtoupper(preg_replace('/[^A-Za-z0-9]/', '', $rawRef)) : null;
+        // Deteksi otomatis afiliator dari cookie 30 hari / session / input
+        $affiliate = TrackAffiliateReferral::currentAffiliate($request, $validated['affiliate_code'] ?? null);
         $orderCode = null;
-        $affiliate = null;
 
-        if ($refCode) {
-            $affiliate = User::where('is_affiliate', true)
-                ->where('affiliate_status', 'active')
-                ->where('affiliate_code', $refCode)
-                ->first();
-
-            if ($affiliate) {
+        if ($affiliate) {
                 // Cari harga paket yang sesuai atau ekstrak angka dari nama paket
                 $saleAmount = 0;
                 foreach ($content['packages'] ?? [] as $pkg) {
@@ -92,10 +76,12 @@ class OrderLandingController extends Controller
 
                 AffiliateSale::create([
                     'affiliate_id' => $affiliate->id,
+                    'product_id' => $request->session()->get('affiliate_last_product_id'),
                     'order_code' => $orderCode,
                     'customer_name' => $validated['customer_name'],
                     'customer_phone' => $validated['customer_phone'],
                     'package_name' => $validated['package_name'],
+                    'quantity' => 1,
                     'sale_amount' => $saleAmount,
                     'commission_rate' => $rate,
                     'commission_amount' => $commissionAmount,
@@ -104,7 +90,6 @@ class OrderLandingController extends Controller
                     'notes' => $validated['notes'] ?? null,
                     'status' => 'pending',
                 ]);
-            }
         }
 
         $text = "Halo Admin URSKYND, saya mau konfirmasi pemesanan produk:\n\n";

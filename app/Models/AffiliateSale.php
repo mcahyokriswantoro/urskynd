@@ -8,10 +8,12 @@ class AffiliateSale extends Model
 {
     protected $fillable = [
         'affiliate_id',
+        'product_id',
         'order_code',
         'customer_name',
         'customer_phone',
         'package_name',
+        'quantity',
         'sale_amount',
         'commission_rate',
         'commission_amount',
@@ -25,6 +27,7 @@ class AffiliateSale extends Model
     protected function casts(): array
     {
         return [
+            'quantity' => 'integer',
             'sale_amount' => 'integer',
             'commission_rate' => 'float',
             'commission_amount' => 'integer',
@@ -35,6 +38,11 @@ class AffiliateSale extends Model
     public function affiliate()
     {
         return $this->belongsTo(User::class, 'affiliate_id');
+    }
+
+    public function product()
+    {
+        return $this->belongsTo(Product::class);
     }
 
     public function getFormattedSaleAmountAttribute(): string

@@ -2,11 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AffiliateClick;
 use App\Models\AffiliateSale;
 use App\Models\AffiliateWithdrawal;
+use App\Models\Product;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\Rule;
 
 class AdminAffiliateController extends Controller
@@ -20,16 +23,22 @@ class AdminAffiliateController extends Controller
             ->withCount([
                 'affiliateSales as total_sales_count',
                 'affiliateSales as approved_sales_count' => fn ($q) => $q->where('status', 'approved'),
+                'affiliateClicks as total_clicks_count',
             ])
             ->latest()
             ->get();
 
-        $sales = AffiliateSale::with('affiliate')->latest()->get();
+        $sales = AffiliateSale::with(['affiliate', 'product'])->latest()->get();
         $withdrawals = AffiliateWithdrawal::with('affiliate')->latest()->get();
+        $products = Product::withCount([
+            'affiliateClicks as clicks_count',
+            'affiliateSales as sales_count' => fn ($q) => $q->whereIn('status', ['pending', 'approved']),
+        ])->orderBy('name')->get();
 
         $stats = [
             'total_affiliates' => $affiliates->count(),
             'active_affiliates' => $affiliates->where('affiliate_status', 'active')->count(),
+            'total_clicks' => Schema::hasTable('affiliate_clicks') ? AffiliateClick::count() : 0,
             'pending_sales_count' => $sales->where('status', 'pending')->count(),
             'approved_sales_amount' => (int) $sales->where('status', 'approved')->sum('sale_amount'),
             'total_commission_accrued' => (int) $sales->where('status', 'approved')->sum('commission_amount'),
@@ -40,7 +49,25 @@ class AdminAffiliateController extends Controller
 
         $packages = AdminPurchasePageController::content()['packages'] ?? [];
 
-        return view('admin.affiliates.index', compact('affiliates', 'sales', 'withdrawals', 'stats', 'packages'));
+        return view('admin.affiliates.index', compact('affiliates', 'sales', 'withdrawals', 'products', 'stats', 'packages'));
+    }
+
+    /**
+     * Update persentase komisi per produk di katalog.
+     */
+    public function updateProductCommission(Request $request, Product $product)
+    {
+        $validated = $request->validate([
+            'commission_rate' => ['required', 'numeric', 'min:1', 'max:50'],
+            'price' => ['required', 'numeric', 'min:0'],
+        ]);
+
+        $product->update([
+            'price' => (int) $validated['price'],
+            'commission_rate' => (float) $validated['commission_rate'],
+        ]);
+
+        return back()->with('success', 'Komisi produk "' . $product->name . '" berhasil diperbarui menjadi ' . $product->commission_rate . '% (' . $product->formatted_commission . ' / pcs).');
     }
 
     /**

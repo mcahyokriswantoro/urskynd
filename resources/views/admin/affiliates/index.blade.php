@@ -104,7 +104,13 @@
             <button type="button" @click="tab = 'affiliates'"
                     :class="tab === 'affiliates' ? 'bg-[#9A6A52] text-white shadow' : 'text-slate-600 hover:bg-slate-100'"
                     class="px-4 py-2.5 rounded-xl text-xs font-bold whitespace-nowrap transition-colors cursor-pointer">
-                🤝 Daftar Mitra &amp; Pengaturan Komisi ({{ $stats['total_affiliates'] }})
+                🤝 Daftar Mitra ({{ $stats['total_affiliates'] }})
+            </button>
+
+            <button type="button" @click="tab = 'products'"
+                    :class="tab === 'products' ? 'bg-[#9A6A52] text-white shadow' : 'text-slate-600 hover:bg-slate-100'"
+                    class="px-4 py-2.5 rounded-xl text-xs font-bold whitespace-nowrap transition-colors cursor-pointer">
+                🧴 Komisi Per Produk ({{ count($products ?? []) }})
             </button>
 
             <button type="button" @click="tab = 'create_sale'"
@@ -358,6 +364,56 @@
                     @endforeach
                 </div>
             @endif
+        </section>
+
+        <!-- TAB 3B: PENGATURAN KOMISI PER PRODUK -->
+        <section x-show="tab === 'products'" style="display: none;" class="bg-white rounded-2xl border border-slate-200 shadow-xs p-6">
+            <div class="mb-4">
+                <h2 class="text-base font-bold text-slate-900">Pengaturan Komisi Afiliasi Per Produk</h2>
+                <p class="text-xs text-slate-500">Atur persentase komisi untuk masing-masing produk seperti sistem komisi produk di Shopee Affiliate.</p>
+            </div>
+
+            <div class="space-y-3">
+                @foreach($products ?? [] as $prod)
+                    <form action="{{ route('admin.affiliates.products.commission', $prod) }}" method="POST" class="p-4 rounded-2xl border border-slate-200 bg-slate-50/60 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        @csrf
+                        @method('PATCH')
+                        <div class="flex items-center gap-3 min-w-0">
+                            <div class="w-12 h-12 rounded-xl bg-white border border-slate-200 overflow-hidden shrink-0 flex items-center justify-center">
+                                @if($prod->image_url)
+                                    <img src="{{ $prod->image_url }}" alt="{{ $prod->name }}" class="w-full h-full object-cover">
+                                @else
+                                    <span>🧴</span>
+                                @endif
+                            </div>
+                            <div class="min-w-0">
+                                <p class="font-bold text-sm text-slate-900 truncate">{{ $prod->name }}</p>
+                                <div class="flex flex-wrap items-center gap-2 text-[11px] text-slate-500 mt-0.5">
+                                    <span>🔗 {{ $prod->clicks_count ?? 0 }} Klik</span>
+                                    <span>•</span>
+                                    <span>🛍️ {{ $prod->sales_count ?? 0 }} Pesanan Afiliasi</span>
+                                    <span>•</span>
+                                    <span class="text-emerald-700 font-bold">Komisi Saat Ini: +{{ $prod->formatted_commission }} / pcs</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex items-end gap-3 shrink-0">
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-600 uppercase mb-1">Harga Produk (Rp)</label>
+                                <input type="number" name="price" value="{{ (int) $prod->price }}" min="0" required class="w-32 px-3 py-2 rounded-xl border border-slate-200 bg-white text-xs font-bold">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-600 uppercase mb-1">Komisi Produk (%)</label>
+                                <input type="number" step="0.5" min="1" max="50" name="commission_rate" value="{{ $prod->commission_rate ?? 10 }}" required class="w-24 px-3 py-2 rounded-xl border border-slate-200 bg-white text-xs font-bold text-center">
+                            </div>
+                            <button type="submit" class="px-4 py-2 rounded-xl bg-[#9A6A52] hover:bg-[#845843] text-white text-xs font-bold cursor-pointer">
+                                Simpan
+                            </button>
+                        </div>
+                    </form>
+                @endforeach
+            </div>
         </section>
 
         <!-- TAB 4: CATAT PENJUALAN MITRA MANUAL -->

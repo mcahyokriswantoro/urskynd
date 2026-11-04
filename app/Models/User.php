@@ -190,6 +190,11 @@ class User extends Authenticatable
         return $this->hasMany(AffiliateSale::class, 'affiliate_id')->latest();
     }
 
+    public function affiliateClicks()
+    {
+        return $this->hasMany(AffiliateClick::class, 'affiliate_id')->latest();
+    }
+
     public function affiliateWithdrawals()
     {
         return $this->hasMany(AffiliateWithdrawal::class, 'affiliate_id')->latest();
