@@ -6,7 +6,6 @@
                 <span class="px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-emerald-100 text-emerald-800 rounded-full border border-emerald-200">
                     Live System Active
                 </span>
-                <span class="text-xs text-slate-400 font-mono">Laravel 11 &bull; AI Engine Ready &bull; Official Store Synced</span>
             </div>
             <h1 class="text-2xl font-serif font-bold text-slate-900">Dashboard Utama Administrator</h1>
             <p class="text-xs text-slate-500">Ringkasan performa sistem, katalog produk resmi URSKYND, artikel edukasi, konsultasi, dan analisis AI.</p>
