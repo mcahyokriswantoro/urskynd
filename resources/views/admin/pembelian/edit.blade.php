@@ -83,7 +83,7 @@
                 <hr class="border-slate-100">
                 <h2 class="text-sm font-bold text-slate-900">🔥 Banner Promo Atas</h2>
                 <div class="grid grid-cols-1 gap-5">
-                    <div x-data="{ preview: @js(\App\Models\PageContent::imageUrl($g['banner_image'] ?? 'images/promo-banner.jpg')), removed: false }">
+                    <div x-data="{ preview: @js(\App\Models\PageContent::imageUrl($g['banner_image'])), removed: false }">
                         <label class="{{ $labelCls }}">Gambar Poster Banner Promo</label>
                         <div class="flex items-start gap-4">
                             <div class="w-32 h-40 rounded-xl border-2 border-dashed border-slate-200 bg-slate-50 overflow-hidden flex items-center justify-center shrink-0">

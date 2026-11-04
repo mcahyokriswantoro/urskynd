@@ -7,7 +7,7 @@
     $waNumber = $g['whatsapp_number'];
     $waDisplay = $g['whatsapp_display'] ?: $waNumber;
     $paymentMethods = PPD::lines($g['payment_methods']);
-    $qrisImg = PageContent::imageUrl($g['qris_image'] ?? 'images/qris-urskynd.jpg');
+    $qrisImg = PageContent::imageUrl($g['qris_image']);
     $qrisMerchant = $g['qris_merchant'] ?? 'URSKYND SKINCARE';
     $qrisNmid = $g['qris_nmid'] ?? 'ID1026569298288';
     $defaultPackage = collect($packages)->firstWhere('popular', true) ?? ($packages[0] ?? null);
@@ -58,7 +58,7 @@
         @endauth
 
         <!-- Promo Banner Image -->
-        @if($bannerImg = PageContent::imageUrl($g['banner_image'] ?? 'images/promo-banner.jpg'))
+        @if($bannerImg = PageContent::imageUrl($g['banner_image']))
         <div class="mb-10 max-w-2xl mx-auto rounded-3xl overflow-hidden shadow-soft-lg border border-brand-border bg-white">
             <img src="{{ $bannerImg }}" alt="{{ $g['banner_title'] ?: 'Promo Spesial URSKYND' }}" class="w-full h-auto block">
         </div>
