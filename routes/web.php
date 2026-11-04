@@ -102,6 +102,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
     // Doctors & Consultations Management
     Route::resource('doctors', \App\Http\Controllers\AdminDoctorController::class)->except(['show']);
+    Route::patch('/doctors/{doctor}/availability', [\App\Http\Controllers\AdminDoctorController::class, 'toggleAvailability'])->name('doctors.availability');
     Route::patch('/bookings/{booking}/status', [\App\Http\Controllers\AdminDoctorController::class, 'updateBooking'])->name('bookings.status');
 
     // Mitra / Affiliates & Commissions Management

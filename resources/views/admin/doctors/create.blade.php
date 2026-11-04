@@ -76,11 +76,24 @@
                 <input type="text" name="specialties" value="{{ old('specialties') }}" placeholder="Contoh: Jerawat Parah (Cystic), Skin Barrier Rusak, Eksim & Dermatitis" required class="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 focus:border-[#9A6A52] focus:ring-1 focus:ring-[#9A6A52] bg-slate-50">
             </div>
 
-            <div class="flex items-center gap-3">
-                <input type="checkbox" id="available" name="available" value="1" {{ old('available', '1') ? 'checked' : '' }} class="rounded border-slate-300 text-[#9A6A52] focus:ring-[#9A6A52]">
-                <label for="available" class="text-xs font-bold text-slate-700 cursor-pointer">
-                    Dokter Tersedia untuk Menerima Konsultasi
-                </label>
+            <div>
+                <label class="block text-xs font-bold text-slate-700 mb-2 uppercase tracking-wider">Status Layanan Konsultasi <span class="text-rose-500">*</span></label>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <label class="flex items-center gap-3 p-3.5 rounded-xl border border-slate-200 bg-slate-50 cursor-pointer hover:border-emerald-400">
+                        <input type="radio" name="available" value="1" {{ old('available', '1') == '1' ? 'checked' : '' }} class="text-emerald-600 focus:ring-emerald-500">
+                        <div>
+                            <p class="text-xs font-bold text-slate-900">🟢 Siap Melayani Konsultasi</p>
+                            <p class="text-[11px] text-slate-500">Dokter aktif menerima jadwal konsultasi pasien sekarang.</p>
+                        </div>
+                    </label>
+                    <label class="flex items-center gap-3 p-3.5 rounded-xl border border-slate-200 bg-slate-50 cursor-pointer hover:border-amber-400">
+                        <input type="radio" name="available" value="0" {{ old('available') === '0' ? 'checked' : '' }} class="text-amber-500 focus:ring-amber-500">
+                        <div>
+                            <p class="text-xs font-bold text-slate-900">⏳ Segera Hadir (Coming Soon)</p>
+                            <p class="text-[11px] text-slate-500">Profil dokter tampil di katalog dengan label Segera Hadir.</p>
+                        </div>
+                    </label>
+                </div>
             </div>
 
             <div class="pt-4 border-t border-slate-100 flex items-center justify-end gap-3">

@@ -77,7 +77,7 @@
                                 <label class="block text-xs font-bold text-brand-text mb-1.5 uppercase tracking-wider">Pilih Dokter Tujuan</label>
                                 <select name="doctor_id" class="w-full px-4 py-3 rounded-xl border-brand-border bg-white text-brand-text focus:border-brand-primary focus:ring-brand-primary/20 text-sm shadow-xs">
                                     <option value="">Dokter Jaga Hari Ini (Rekomendasi Cepat)</option>
-                                    @foreach($doctors as $doc)
+                                    @foreach($doctors->where('available', true) as $doc)
                                         <option value="{{ $doc['id'] }}">{{ $doc['name'] }} ({{ $doc['specialties'][0] ?? 'Dermatologi' }})</option>
                                     @endforeach
                                 </select>
@@ -127,10 +127,17 @@
                                 <div class="flex-1 min-w-0">
                                     <div class="flex items-center justify-between gap-2 mb-1">
                                         <h3 class="font-bold font-serif text-brand-text text-lg truncate">{{ $doctor['name'] }}</h3>
-                                        <span class="px-2 py-0.5 bg-brand-success/10 text-brand-success text-[10px] font-bold rounded-full shrink-0 flex items-center gap-1">
-                                            <span class="w-1.5 h-1.5 rounded-full bg-brand-success"></span>
-                                            Tersedia
-                                        </span>
+                                        @if($doctor['available'])
+                                            <span class="px-2.5 py-0.5 bg-brand-success/10 text-brand-success text-[10px] font-bold rounded-full shrink-0 flex items-center gap-1">
+                                                <span class="w-1.5 h-1.5 rounded-full bg-brand-success animate-pulse"></span>
+                                                Siap Melayani
+                                            </span>
+                                        @else
+                                            <span class="px-2.5 py-0.5 bg-amber-100 text-amber-800 border border-amber-200 text-[10px] font-bold rounded-full shrink-0 flex items-center gap-1">
+                                                <span>⏳</span>
+                                                Segera Hadir
+                                            </span>
+                                        @endif
                                     </div>
                                     <p class="text-xs text-brand-primary font-medium">{{ $doctor['title'] }}</p>
                                     <p class="text-xs text-brand-textAlt mt-0.5">{{ $doctor['hospital'] }}</p>
@@ -160,10 +167,16 @@
                                 <p class="text-xs font-bold text-brand-success">{{ $doctor['price'] }}</p>
                             </div>
 
-                            <button type="button" onclick="const sel = document.querySelector('select[name=doctor_id]'); if(sel) { sel.value = '{{ $doctor['id'] }}'; } document.getElementById('consultation-form-section').scrollIntoView({behavior: 'smooth'});" class="px-4 py-2 bg-brand-primary text-white rounded-xl text-xs font-bold hover:bg-brand-primaryAlt transition-all shadow-xs flex items-center gap-1.5">
-                                <span>Pilih Dokter Ini</span>
-                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
-                            </button>
+                            @if($doctor['available'])
+                                <button type="button" onclick="const sel = document.querySelector('select[name=doctor_id]'); if(sel) { sel.value = '{{ $doctor['id'] }}'; } document.getElementById('consultation-form-section').scrollIntoView({behavior: 'smooth'});" class="px-4 py-2 bg-brand-primary text-white rounded-xl text-xs font-bold hover:bg-brand-primaryAlt transition-all shadow-xs flex items-center gap-1.5 cursor-pointer">
+                                    <span>Konsultasi Sekarang</span>
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                                </button>
+                            @else
+                                <span class="px-4 py-2 bg-slate-100 text-slate-500 border border-slate-200 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-not-allowed">
+                                    <span>⏳ Jadwal Segera Hadir</span>
+                                </span>
+                            @endif
                         </div>
                     </div>
                 @endforeach

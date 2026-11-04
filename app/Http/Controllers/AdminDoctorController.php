@@ -36,7 +36,7 @@ class AdminDoctorController extends Controller
             'available' => 'nullable|boolean',
         ]);
 
-        $validated['available'] = $request->boolean('available', true);
+        $validated['available'] = $request->has('available') ? $request->boolean('available') : false;
 
         Doctor::create($validated);
 
@@ -63,11 +63,21 @@ class AdminDoctorController extends Controller
             'available' => 'nullable|boolean',
         ]);
 
-        $validated['available'] = $request->boolean('available', true);
+        $validated['available'] = $request->has('available') ? $request->boolean('available') : false;
 
         $doctor->update($validated);
 
         return redirect()->route('admin.doctors.index')->with('success', 'Data dokter berhasil diperbarui!');
+    }
+
+    public function toggleAvailability(Request $request, Doctor $doctor)
+    {
+        $newStatus = $request->has('available') ? $request->boolean('available') : !$doctor->available;
+        $doctor->update(['available' => $newStatus]);
+
+        $label = $newStatus ? 'Siap Melayani Konsultasi' : 'Segera Hadir (Jadwal Penuh)';
+
+        return back()->with('success', 'Status layanan ' . $doctor->name . ' berhasil diubah menjadi: ' . $label . '.');
     }
 
     public function destroy(Doctor $doctor)

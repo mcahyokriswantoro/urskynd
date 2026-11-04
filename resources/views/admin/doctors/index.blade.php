@@ -63,24 +63,45 @@
                         </div>
                     </div>
 
-                    <div class="pt-3 border-t border-slate-100 flex items-center justify-between">
-                        <span class="px-2 py-0.5 text-[9px] font-bold rounded {{ $doc->available ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-slate-100 text-slate-600' }}">
-                            {{ $doc->available ? 'Tersedia' : 'Nonaktif' }}
-                        </span>
+                    <div class="pt-3 border-t border-slate-100 space-y-2.5">
+                        <div class="flex items-center justify-between gap-2">
+                            <span class="px-2.5 py-1 text-[10px] font-bold rounded-full inline-flex items-center gap-1.5 {{ $doc->available ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-amber-50 text-amber-800 border border-amber-200' }}">
+                                <span class="w-1.5 h-1.5 rounded-full {{ $doc->available ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500' }}"></span>
+                                {{ $doc->available ? 'Siap Melayani Konsultasi' : 'Segera Hadir (Coming Soon)' }}
+                            </span>
 
-                        <div class="flex items-center gap-2">
-                            <a href="{{ route('admin.doctors.edit', $doc) }}" class="text-xs text-[#9A6A52] hover:underline font-semibold">
-                                Edit
-                            </a>
-                            <span class="text-slate-300">&bull;</span>
-                            <form method="POST" action="{{ route('admin.doctors.destroy', $doc) }}" onsubmit="return confirm('Apakah Anda yakin ingin menghapus data dokter ini?');" class="inline">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="text-xs text-rose-600 hover:underline font-semibold">
-                                    Hapus
-                                </button>
-                            </form>
+                            <div class="flex items-center gap-2">
+                                <a href="{{ route('admin.doctors.edit', $doc) }}" class="text-xs text-[#9A6A52] hover:underline font-semibold">
+                                    Edit
+                                </a>
+                                <span class="text-slate-300">&bull;</span>
+                                <form method="POST" action="{{ route('admin.doctors.destroy', $doc) }}" onsubmit="return confirm('Apakah Anda yakin ingin menghapus data dokter ini?');" class="inline">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="text-xs text-rose-600 hover:underline font-semibold cursor-pointer">
+                                        Hapus
+                                    </button>
+                                </form>
+                            </div>
                         </div>
+
+                        <!-- Tombol Cepat Ganti Status Layanan Konsultasi -->
+                        <form method="POST" action="{{ route('admin.doctors.availability', $doc) }}" class="grid grid-cols-2 gap-1.5 bg-slate-100 p-1 rounded-xl">
+                            @csrf
+                            @method('PATCH')
+                            <button type="submit"
+                                    name="available"
+                                    value="1"
+                                    class="py-1.5 px-2 rounded-lg text-[10px] font-bold transition-all cursor-pointer {{ $doc->available ? 'bg-emerald-600 text-white shadow-xs' : 'text-slate-600 hover:bg-white' }}">
+                                🟢 Siap Melayani
+                            </button>
+                            <button type="submit"
+                                    name="available"
+                                    value="0"
+                                    class="py-1.5 px-2 rounded-lg text-[10px] font-bold transition-all cursor-pointer {{ !$doc->available ? 'bg-amber-500 text-white shadow-xs' : 'text-slate-600 hover:bg-white' }}">
+                                ⏳ Segera Hadir
+                            </button>
+                        </form>
                     </div>
                 </div>
             @empty

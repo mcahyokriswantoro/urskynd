@@ -11,11 +11,11 @@ class ConsultationController extends Controller
      */
     public function index()
     {
-        $doctors = \App\Models\Doctor::where('available', true)->get();
+        $doctors = \App\Models\Doctor::orderByDesc('available')->orderBy('id')->get();
 
         if ($doctors->isEmpty()) {
             \Illuminate\Support\Facades\Artisan::call('db:seed', ['--class' => 'DoctorSeeder']);
-            $doctors = \App\Models\Doctor::where('available', true)->get();
+            $doctors = \App\Models\Doctor::orderByDesc('available')->orderBy('id')->get();
         }
 
         $concerns = [
