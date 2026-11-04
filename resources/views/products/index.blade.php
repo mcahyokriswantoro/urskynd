@@ -109,20 +109,9 @@
                                         Detail
                                     </a>
 
-                                    @auth
-                                        <a href="{{ route('products.show', $product) }}" class="px-4 py-2 bg-brand-primary text-white rounded-xl text-xs font-bold hover:bg-brand-primaryAlt transition-all shadow-xs">
-                                            Beli Sekarang
-                                        </a>
-                                    @else
-                                        <button type="button" 
-                                                @click="$dispatch('open-auth-modal', { 
-                                                    title: 'Masuk untuk Memesan Produk', 
-                                                    description: 'Silakan masuk atau daftar akun terlebih dahulu untuk memesan {{ addslashes($product->name) }} ({{ $product->formatted_price }}).' 
-                                                })"
-                                                class="px-4 py-2 bg-brand-primary text-white rounded-xl text-xs font-bold hover:bg-brand-primaryAlt transition-all shadow-xs">
-                                            Beli Sekarang
-                                        </button>
-                                    @endauth
+                                    <a href="{{ route('products.show', ['product' => $product, 'checkout' => 1]) }}" class="px-4 py-2 bg-brand-primary text-white rounded-xl text-xs font-bold hover:bg-brand-primaryAlt transition-all shadow-xs">
+                                        Beli Sekarang
+                                    </a>
                                 </div>
                             </div>
                         </div>

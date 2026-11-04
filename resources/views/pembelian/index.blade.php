@@ -232,7 +232,7 @@
                                 <span>Pesan Paket Ini (Form Cepat)</span>
                             </button>
 
-                            <a href="https://wa.me/{{ $waNumber }}?text={{ rawurlencode($pkg['wa_message'] ?: 'Halo Admin URSKYND, saya mau pesan ' . $pkg['name'] . ' (' . $pkg['formatted_price'] . ').') }}"
+                            <a href="{{ route('pembelian.wa-order', ['pkg' => $loop->index, 'ref' => $affiliateRef ?? null]) }}"
                                target="_blank"
                                rel="noopener"
                                class="w-full py-2.5 px-3 rounded-xl border border-emerald-600 text-emerald-700 bg-emerald-50 hover:bg-emerald-600 hover:text-white font-bold text-xs flex items-center justify-center gap-2 transition-colors">

@@ -24,6 +24,7 @@ Route::post('/products/{product}/order', [\App\Http\Controllers\ProductControlle
 // Public Product Purchase Details / Landing Order Page (DVN Reference Style)
 Route::get('/detail-pembelian', [\App\Http\Controllers\OrderLandingController::class, 'index'])->name('pembelian.index');
 Route::post('/detail-pembelian/order', [\App\Http\Controllers\OrderLandingController::class, 'storeOrder'])->name('pembelian.order');
+Route::get('/detail-pembelian/wa-order', [\App\Http\Controllers\OrderLandingController::class, 'quickWhatsappOrder'])->name('pembelian.wa-order');
 
 // Public Consultation Menu & Submission
 Route::get('/konsultasi', [\App\Http\Controllers\ConsultationController::class, 'index'])->name('consultation.index');

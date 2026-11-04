@@ -116,4 +116,54 @@ class OrderLandingController extends Controller
 
         return redirect($whatsappUrl);
     }
+
+    /**
+     * Klik tombol cepat "Order via WhatsApp" pada kartu paket.
+     * Otomatis mendeteksi afiliator dari cookie/session dan mencatat transaksi ke database sebelum redirect ke WA!
+     */
+    public function quickWhatsappOrder(Request $request)
+    {
+        $content = AdminPurchasePageController::content();
+        $adminWhatsapp = $content['general']['whatsapp_number'];
+        $pkgIndex = (int) $request->query('pkg', 0);
+        $pkg = $content['packages'][$pkgIndex] ?? ($content['packages'][0] ?? null);
+
+        $pkgName = $pkg['name'] ?? 'Paket Skincare URSKYND';
+        $saleAmount = (int) ($pkg['price'] ?? 185000);
+        $formattedPrice = PurchasePageDefaults::rupiah($saleAmount);
+
+        $affiliate = TrackAffiliateReferral::currentAffiliate($request, $request->query('ref'));
+        $orderCode = 'ORD-' . now()->format('ymd') . '-' . strtoupper(substr(uniqid(), -5));
+
+        if ($affiliate) {
+            $rate = (float) ($affiliate->commission_rate ?: 10);
+            $commissionAmount = (int) round($saleAmount * ($rate / 100));
+
+            AffiliateSale::create([
+                'affiliate_id' => $affiliate->id,
+                'product_id' => $request->session()->get('affiliate_last_product_id'),
+                'order_code' => $orderCode,
+                'customer_name' => auth()->user()->name ?? 'Pembeli via Link WA (' . $orderCode . ')',
+                'customer_phone' => auth()->user()->phone ?? 'Konfirmasi via WhatsApp',
+                'package_name' => $pkgName . ' (' . $formattedPrice . ')',
+                'quantity' => 1,
+                'sale_amount' => $saleAmount,
+                'commission_rate' => $rate,
+                'commission_amount' => $commissionAmount,
+                'payment_method' => 'QRIS Resmi URSKYND',
+                'notes' => 'Order cepat via tombol WhatsApp paket (Ref: ' . $affiliate->affiliate_code . ')',
+                'status' => 'pending',
+            ]);
+        }
+
+        $baseMsg = !empty($pkg['wa_message'])
+            ? $pkg['wa_message']
+            : "Halo Admin URSKYND, saya mau pesan {$pkgName} ({$formattedPrice}) dengan pembayaran QRIS.";
+
+        if ($affiliate) {
+            $baseMsg .= "\n\n🧾 *Kode Order*: {$orderCode}\n🤝 *Kode Mitra/Afiliator*: {$affiliate->affiliate_code} ({$affiliate->name})";
+        }
+
+        return redirect('https://wa.me/' . $adminWhatsapp . '?text=' . rawurlencode($baseMsg));
+    }
 }

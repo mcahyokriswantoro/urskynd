@@ -6,7 +6,7 @@
             : url()->current();
     @endphp
     <div class="max-w-5xl mx-auto px-4 sm:px-6" x-data="{
-        checkoutModalOpen: false,
+        checkoutModalOpen: @js(request()->boolean('checkout')),
         copyToast: false,
         affCopyToast: false,
         qty: 1,
