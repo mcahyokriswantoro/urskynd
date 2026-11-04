@@ -5,6 +5,7 @@ namespace App\Http\Middleware;
 use App\Models\AffiliateClick;
 use App\Models\Product;
 use App\Models\User;
+use App\Support\AffiliateSettingsDefaults;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cookie;
@@ -27,8 +28,9 @@ class TrackAffiliateReferral
                     ->first();
 
                 if ($affiliate) {
+                    $cookieDays = (int) (AffiliateSettingsDefaults::current()['cookie_days'] ?? 30);
                     $request->session()->put('affiliate_ref', $affiliate->affiliate_code);
-                    Cookie::queue(self::COOKIE_NAME, $affiliate->affiliate_code, 60 * 24 * 30);
+                    Cookie::queue(self::COOKIE_NAME, $affiliate->affiliate_code, 60 * 24 * max(1, $cookieDays));
 
                     // Deteksi produk yang sedang dibuka dari URL /products/{slug} atau ?product=id
                     $productId = null;

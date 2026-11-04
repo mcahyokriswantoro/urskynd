@@ -106,6 +106,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
     // Mitra / Affiliates & Commissions Management
     Route::get('/affiliates', [\App\Http\Controllers\AdminAffiliateController::class, 'index'])->name('affiliates.index');
+    Route::put('/affiliates/settings', [\App\Http\Controllers\AdminAffiliateController::class, 'updateSettings'])->name('affiliates.settings.update');
     Route::post('/affiliates/sales', [\App\Http\Controllers\AdminAffiliateController::class, 'storeSale'])->name('affiliates.sales.store');
     Route::patch('/affiliates/sales/{sale}/status', [\App\Http\Controllers\AdminAffiliateController::class, 'updateSaleStatus'])->name('affiliates.sales.status');
     Route::patch('/affiliates/withdrawals/{withdrawal}/status', [\App\Http\Controllers\AdminAffiliateController::class, 'updateWithdrawalStatus'])->name('affiliates.withdrawals.status');

@@ -1,12 +1,15 @@
 @php
+    use App\Support\AffiliateSettingsDefaults;
     $defaultType = old('account_type', (request('type') === 'affiliate' || request()->boolean('mitra')) ? 'affiliate' : 'regular');
+    $affSettings = AffiliateSettingsDefaults::current();
+    $affBenefits = AffiliateSettingsDefaults::benefitsList($affSettings);
 @endphp
 
 <x-guest-layout>
     <div x-data="{ accountType: @js($defaultType) }">
         <div class="mb-5 text-center">
-            <h2 class="text-2xl font-serif font-bold text-brand-text" x-text="accountType === 'affiliate' ? 'Daftar Mitra & Afiliator' : 'Buat Akun Baru'">Buat Akun Baru</h2>
-            <p class="text-xs text-brand-textAlt mt-1" x-text="accountType === 'affiliate' ? 'Jual produk resmi URSKYND & raih komisi yang bisa dicairkan kapan saja' : 'Mulai perjalanan kulit sehat impianmu bersama URSKYND'"></p>
+            <h2 class="text-2xl font-serif font-bold text-brand-text" x-text="accountType === 'affiliate' ? @js($affSettings['register_title']) : 'Buat Akun Baru'">Buat Akun Baru</h2>
+            <p class="text-xs text-brand-textAlt mt-1" x-text="accountType === 'affiliate' ? @js($affSettings['register_subtitle']) : 'Mulai perjalanan kulit sehat impianmu bersama URSKYND'"></p>
         </div>
 
         <!-- Menu Pilihan Jenis Akun: Member Reguler vs Mitra / Afiliator -->
@@ -29,7 +32,7 @@
                         :class="accountType === 'affiliate' ? 'bg-brand-primary text-white shadow-soft border-brand-primary font-bold' : 'text-brand-textAlt hover:text-brand-text border-transparent'"
                         class="py-2.5 px-3 rounded-xl border text-xs flex flex-col items-center justify-center gap-1 transition-all relative cursor-pointer">
                     <span class="absolute -top-2 right-2 px-2 py-0.5 rounded-full bg-emerald-600 text-white text-[9px] font-extrabold uppercase tracking-wider shadow-xs">
-                        Komisi 10%+
+                        {{ $affSettings['register_badge'] }}
                     </span>
                     <span class="text-lg">🤝</span>
                     <span>Mitra / Afiliator</span>
@@ -41,12 +44,12 @@
         <!-- Info Keuntungan Mitra / Afiliator -->
         <div x-show="accountType === 'affiliate'" x-transition class="mb-5 p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs space-y-1.5">
             <p class="font-bold flex items-center gap-1.5 text-emerald-800">
-                <span>✨</span> Keuntungan Menjadi Mitra / Afiliator Resmi URSKYND:
+                <span>✨</span> {{ $affSettings['register_benefits_title'] }}
             </p>
             <ul class="space-y-1 text-[11px] text-emerald-800 list-disc list-inside">
-                <li>Dapatkan <strong>Link &amp; Kode Referral Unik</strong> otomatis setelah daftar.</li>
-                <li>Komisi langsung <strong>10%</strong> dari setiap paket/produk yang berhasil terjual.</li>
-                <li>Saldo komisi transparan &amp; <strong>bisa dicairkan (withdraw)</strong> ke Bank atau E-Wallet.</li>
+                @foreach($affBenefits as $benefit)
+                    <li>{{ $benefit }}</li>
+                @endforeach
             </ul>
         </div>
 

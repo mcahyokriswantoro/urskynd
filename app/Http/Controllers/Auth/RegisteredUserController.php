@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Support\AffiliateSettingsDefaults;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -71,9 +72,10 @@ class RegisteredUserController extends Controller
         ];
 
         if ($isAffiliate) {
+            $affSettings = AffiliateSettingsDefaults::current();
             $userData['affiliate_code'] = User::generateUniqueAffiliateCode($request->name, $request->affiliate_code);
             $userData['affiliate_status'] = 'active';
-            $userData['commission_rate'] = 10.00;
+            $userData['commission_rate'] = (float) ($affSettings['default_commission_rate'] ?? 10.00);
             $userData['bank_name'] = $request->bank_name;
             $userData['bank_account_number'] = $request->bank_account_number;
             $userData['bank_account_holder'] = $request->bank_account_holder;

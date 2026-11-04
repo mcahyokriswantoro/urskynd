@@ -5,8 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\AffiliateClick;
 use App\Models\AffiliateSale;
 use App\Models\AffiliateWithdrawal;
+use App\Models\PageContent;
 use App\Models\Product;
 use App\Models\User;
+use App\Support\AffiliateSettingsDefaults;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -48,8 +50,56 @@ class AdminAffiliateController extends Controller
         ];
 
         $packages = AdminPurchasePageController::content()['packages'] ?? [];
+        $settings = AffiliateSettingsDefaults::current();
 
-        return view('admin.affiliates.index', compact('affiliates', 'sales', 'withdrawals', 'products', 'stats', 'packages'));
+        return view('admin.affiliates.index', compact('affiliates', 'sales', 'withdrawals', 'products', 'stats', 'packages', 'settings'));
+    }
+
+    /**
+     * Simpan pengaturan teks, keuntungan pendaftaran, dan persentase komisi default Mitra/Afiliator.
+     */
+    public function updateSettings(Request $request)
+    {
+        $validated = $request->validate([
+            'default_commission_rate' => ['required', 'numeric', 'min:1', 'max:50'],
+            'min_withdrawal_amount' => ['required', 'integer', 'min:1000'],
+            'cookie_days' => ['required', 'integer', 'min:1', 'max:365'],
+            'register_badge' => ['required', 'string', 'max:50'],
+            'register_title' => ['required', 'string', 'max:120'],
+            'register_subtitle' => ['required', 'string', 'max:255'],
+            'register_benefits_title' => ['required', 'string', 'max:150'],
+            'register_benefits' => ['required', 'string', 'max:2000'],
+            'dashboard_badge' => ['required', 'string', 'max:80'],
+            'dashboard_title' => ['required', 'string', 'max:120'],
+            'dashboard_subtitle' => ['required', 'string', 'max:300'],
+            'catalog_title' => ['required', 'string', 'max:150'],
+            'catalog_subtitle' => ['required', 'string', 'max:350'],
+            'bundle_banner_badge' => ['required', 'string', 'max:150'],
+            'bundle_banner_text' => ['required', 'string', 'max:300'],
+            'how_it_works_title' => ['required', 'string', 'max:120'],
+            'how_it_works_subtitle' => ['required', 'string', 'max:255'],
+            'step_1_title' => ['required', 'string', 'max:120'],
+            'step_1_desc' => ['required', 'string', 'max:400'],
+            'step_2_title' => ['required', 'string', 'max:120'],
+            'step_2_desc' => ['required', 'string', 'max:400'],
+            'step_3_title' => ['required', 'string', 'max:120'],
+            'step_3_desc' => ['required', 'string', 'max:400'],
+            'apply_rate_to_all' => ['nullable', 'boolean'],
+        ]);
+
+        $rate = (float) $validated['default_commission_rate'];
+        $applyAll = $request->boolean('apply_rate_to_all');
+        unset($validated['apply_rate_to_all']);
+
+        PageContent::saveContent(AffiliateSettingsDefaults::KEY, $validated);
+
+        if ($applyAll) {
+            User::where('is_affiliate', true)->update(['commission_rate' => $rate]);
+            Product::query()->update(['commission_rate' => $rate]);
+        }
+
+        return redirect()->route('admin.affiliates.index', ['tab' => 'settings'])
+            ->with('success', 'Pengaturan teks, keuntungan pendaftaran, dan persentase komisi berhasil disimpan!');
     }
 
     /**

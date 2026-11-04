@@ -6,6 +6,7 @@ use App\Models\AffiliateSale;
 use App\Models\AffiliateWithdrawal;
 use App\Models\Product;
 use App\Models\User;
+use App\Support\AffiliateSettingsDefaults;
 use App\Support\PurchasePageDefaults;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -90,7 +91,9 @@ class AffiliateController extends Controller
             ];
         })->all();
 
-        return view('affiliate.index', compact('user', 'sales', 'withdrawals', 'stats', 'affiliateProducts', 'packages'));
+        $affSettings = AffiliateSettingsDefaults::current();
+
+        return view('affiliate.index', compact('user', 'sales', 'withdrawals', 'stats', 'affiliateProducts', 'packages', 'affSettings'));
     }
 
     /**
@@ -99,6 +102,7 @@ class AffiliateController extends Controller
     public function join(Request $request)
     {
         $user = $request->user();
+        $affSettings = AffiliateSettingsDefaults::current();
 
         $request->validate([
             'affiliate_code' => ['nullable', 'string', 'alpha_num', 'min:4', 'max:20', Rule::unique('users', 'affiliate_code')->ignore($user->id)],
@@ -114,7 +118,7 @@ class AffiliateController extends Controller
             'is_affiliate' => true,
             'affiliate_code' => User::generateUniqueAffiliateCode($user->name, $request->affiliate_code),
             'affiliate_status' => 'active',
-            'commission_rate' => $user->commission_rate ?: 10.00,
+            'commission_rate' => $user->commission_rate ?: (float) ($affSettings['default_commission_rate'] ?? 10.00),
             'bank_name' => $request->bank_name,
             'bank_account_number' => $request->bank_account_number,
             'bank_account_holder' => $request->bank_account_holder,
@@ -161,13 +165,16 @@ class AffiliateController extends Controller
             return back()->withErrors(['amount' => 'Akun mitra Anda tidak aktif.']);
         }
 
+        $affSettings = AffiliateSettingsDefaults::current();
+        $minWithdraw = (int) ($affSettings['min_withdrawal_amount'] ?? 20000);
+
         $request->validate([
-            'amount' => ['required', 'integer', 'min:20000', 'max:' . max(0, (int) $user->commission_balance)],
+            'amount' => ['required', 'integer', 'min:' . $minWithdraw, 'max:' . max(0, (int) $user->commission_balance)],
             'bank_name' => ['required', 'string', 'max:60'],
             'bank_account_number' => ['required', 'string', 'max:60'],
             'bank_account_holder' => ['required', 'string', 'max:120'],
         ], [
-            'amount.min' => 'Minimal pencairan komisi adalah Rp 20.000.',
+            'amount.min' => 'Minimal pencairan komisi adalah Rp ' . number_format($minWithdraw, 0, ',', '.') . '.',
             'amount.max' => 'Nominal pencairan melebihi saldo komisi siap cair Anda.',
         ]);
 

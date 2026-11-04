@@ -15,11 +15,11 @@
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
                 <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-primary/10 text-brand-primary text-xs font-bold uppercase tracking-wider mb-2">
-                    🤝 URSKYND Affiliate Center
+                    🤝 {{ $affSettings['dashboard_badge'] }}
                 </span>
-                <h1 class="text-2xl sm:text-3xl font-serif font-bold text-brand-text">Mitra &amp; Afiliator Produk</h1>
+                <h1 class="text-2xl sm:text-3xl font-serif font-bold text-brand-text">{{ $affSettings['dashboard_title'] }}</h1>
                 <p class="text-xs sm:text-sm text-brand-textAlt mt-0.5">
-                    Pilih produk dari katalog, bagikan link afiliasi produk Anda, dan dapatkan komisi otomatis setiap ada pembelian.
+                    {{ $affSettings['dashboard_subtitle'] }}
                 </p>
             </div>
         </div>
@@ -154,11 +154,11 @@
                 <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-6 pb-4 border-b border-brand-border/60">
                     <div>
                         <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-[11px] font-bold mb-1.5">
-                            <span>⚡</span> Pelacakan Klik &amp; Konversi Otomatis (Cookie 30 Hari)
+                            <span>⚡</span> Pelacakan Klik &amp; Konversi Otomatis (Cookie {{ $affSettings['cookie_days'] }} Hari)
                         </div>
-                        <h2 class="text-xl sm:text-2xl font-serif font-bold text-brand-text">🧴 Pilih Produk &amp; Salin Link Afiliasi</h2>
+                        <h2 class="text-xl sm:text-2xl font-serif font-bold text-brand-text">🧴 {{ $affSettings['catalog_title'] }}</h2>
                         <p class="text-xs text-brand-textAlt">
-                            Setiap produk memiliki link afiliasi khusus dengan kode Anda (<strong class="font-mono text-brand-primary">{{ $user->affiliate_code }}</strong>). Saat pembeli klik link produk dan memesan, komisi langsung masuk otomatis!
+                            {{ $affSettings['catalog_subtitle'] }} (<strong class="font-mono text-brand-primary">{{ $user->affiliate_code }}</strong>)
                         </p>
                     </div>
                     <a href="{{ route('products.index') }}" class="px-4 py-2 rounded-xl bg-brand-cream hover:bg-brand-primary hover:text-white text-brand-text text-xs font-bold transition-colors shrink-0 self-start md:self-center">
@@ -238,10 +238,10 @@
                 <div class="mt-6 p-4 rounded-2xl bg-gradient-to-r from-[#9A6A52] to-[#7C523E] text-white flex flex-col lg:flex-row items-center justify-between gap-4">
                     <div class="space-y-1 text-center lg:text-left">
                         <span class="px-2.5 py-0.5 rounded-full bg-white/20 text-[10px] font-bold uppercase tracking-wider">
-                            🎁 Link Halaman Paket Bundling Hemat (Komisi s/d Rp 38.900 / Paket)
+                            🎁 {{ $affSettings['bundle_banner_badge'] }}
                         </span>
                         <p class="text-xs text-white/90">
-                            Selain link per produk di atas, Anda juga bisa membagikan link halaman promo bundling semua paket:
+                            {{ $affSettings['bundle_banner_text'] }}
                         </p>
                     </div>
                     <div class="flex flex-col sm:flex-row gap-2 w-full lg:w-auto">
@@ -256,6 +256,10 @@
             </div>
 
             <!-- Grid Pencairan Komisi & Info Sistem Pelacakan Otomatis -->
+            @php
+                $minWithdraw = (int) ($affSettings['min_withdrawal_amount'] ?? 20000);
+                $minWithdrawFormatted = 'Rp ' . number_format($minWithdraw, 0, ',', '.');
+            @endphp
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <!-- Kolom 1: Form Pencairan Komisi (Withdraw) -->
                 <div class="bg-white rounded-3xl p-6 border border-brand-border shadow-soft flex flex-col justify-between">
@@ -263,7 +267,7 @@
                         <div class="flex items-center justify-between mb-4 pb-3 border-b border-brand-border/60">
                             <div>
                                 <h3 class="text-lg font-serif font-bold text-brand-text">🏦 Cairkan Komisi (Withdraw)</h3>
-                                <p class="text-xs text-brand-textAlt">Tarik saldo komisi ke rekening Bank atau E-Wallet Anda (Min. Rp 20.000).</p>
+                                <p class="text-xs text-brand-textAlt">Tarik saldo komisi ke rekening Bank atau E-Wallet Anda (Min. {{ $minWithdrawFormatted }}).</p>
                             </div>
                             <button type="button" @click="editBankOpen = !editBankOpen" class="text-xs font-bold text-brand-primary hover:underline cursor-pointer">
                                 ⚙️ Ubah Rekening
@@ -324,21 +328,21 @@
                                 </label>
                                 <input type="number"
                                        name="amount"
-                                       min="20000"
-                                       max="{{ max(20000, $stats['balance']) }}"
-                                       value="{{ old('amount', $stats['balance'] >= 20000 ? $stats['balance'] : '') }}"
-                                       placeholder="Minimal 20000"
+                                       min="{{ $minWithdraw }}"
+                                       max="{{ max($minWithdraw, $stats['balance']) }}"
+                                       value="{{ old('amount', $stats['balance'] >= $minWithdraw ? $stats['balance'] : '') }}"
+                                       placeholder="Minimal {{ $minWithdraw }}"
                                        class="w-full px-4 py-3 rounded-xl border border-brand-border bg-white text-sm font-bold text-brand-text"
                                        required>
                             </div>
 
                             <button type="submit"
-                                    @disabled($stats['balance'] < 20000)
-                                    class="w-full py-3.5 px-5 rounded-2xl font-bold text-xs sm:text-sm transition-all shadow-soft {{ $stats['balance'] >= 20000 ? 'bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer' : 'bg-gray-200 text-gray-500 cursor-not-allowed' }}">
-                                @if($stats['balance'] >= 20000)
+                                    @disabled($stats['balance'] < $minWithdraw)
+                                    class="w-full py-3.5 px-5 rounded-2xl font-bold text-xs sm:text-sm transition-all shadow-soft {{ $stats['balance'] >= $minWithdraw ? 'bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer' : 'bg-gray-200 text-gray-500 cursor-not-allowed' }}">
+                                @if($stats['balance'] >= $minWithdraw)
                                     💸 Ajukan Pencairan Komisi Sekarang
                                 @else
-                                    Saldo Belum Mencukupi Minimal Pencairan (Rp 20.000)
+                                    Saldo Belum Mencukupi Minimal Pencairan ({{ $minWithdrawFormatted }})
                                 @endif
                             </button>
                         </form>
@@ -350,8 +354,8 @@
                     <div>
                         <div class="mb-4 pb-3 border-b border-brand-border/60 flex items-center justify-between">
                             <div>
-                                <h3 class="text-lg font-serif font-bold text-brand-text">⚡ Cara Kerja Komisi Otomatis</h3>
-                                <p class="text-xs text-brand-textAlt">Tanpa input manual — semua penjualan terlacak otomatis dari link produk Anda.</p>
+                                <h3 class="text-lg font-serif font-bold text-brand-text">⚡ {{ $affSettings['how_it_works_title'] }}</h3>
+                                <p class="text-xs text-brand-textAlt">{{ $affSettings['how_it_works_subtitle'] }}</p>
                             </div>
                             <span class="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-extrabold uppercase">
                                 Auto-Track Aktif
@@ -362,9 +366,9 @@
                             <div class="flex items-start gap-3 p-3 rounded-2xl bg-brand-cream/40 border border-brand-border/60">
                                 <span class="w-7 h-7 rounded-xl bg-brand-primary text-white font-bold flex items-center justify-center shrink-0">1</span>
                                 <div>
-                                    <p class="font-bold text-brand-text">Salin &amp; Sebarkan Link Produk</p>
+                                    <p class="font-bold text-brand-text">{{ $affSettings['step_1_title'] }}</p>
                                     <p class="text-brand-textAlt mt-0.5 leading-relaxed">
-                                        Pilih produk di atas (misal <em>Face Serum</em> atau <em>UV Sunscreen</em>) lalu klik <strong>Salin Link</strong> atau bagikan langsung dari halaman detail produk.
+                                        {{ $affSettings['step_1_desc'] }}
                                     </p>
                                 </div>
                             </div>
@@ -372,9 +376,9 @@
                             <div class="flex items-start gap-3 p-3 rounded-2xl bg-brand-cream/40 border border-brand-border/60">
                                 <span class="w-7 h-7 rounded-xl bg-brand-primary text-white font-bold flex items-center justify-center shrink-0">2</span>
                                 <div>
-                                    <p class="font-bold text-brand-text">Otomatis Rekam Klik &amp; Cookie 30 Hari</p>
+                                    <p class="font-bold text-brand-text">{{ $affSettings['step_2_title'] }}</p>
                                     <p class="text-brand-textAlt mt-0.5 leading-relaxed">
-                                        Saat calon pembeli membuka link Anda, sistem langsung mencatat jumlah klik produk dan mengunci kode afiliasi Anda (<strong class="font-mono">{{ $user->affiliate_code }}</strong>) di perangkat pembeli selama 30 hari.
+                                        {{ $affSettings['step_2_desc'] }} (<strong class="font-mono">{{ $user->affiliate_code }}</strong>)
                                     </p>
                                 </div>
                             </div>
@@ -382,9 +386,9 @@
                             <div class="flex items-start gap-3 p-3 rounded-2xl bg-brand-cream/40 border border-brand-border/60">
                                 <span class="w-7 h-7 rounded-xl bg-emerald-600 text-white font-bold flex items-center justify-center shrink-0">3</span>
                                 <div>
-                                    <p class="font-bold text-brand-text">Pembeli Checkout = Komisi Masuk Otomatis</p>
+                                    <p class="font-bold text-brand-text">{{ $affSettings['step_3_title'] }}</p>
                                     <p class="text-brand-textAlt mt-0.5 leading-relaxed">
-                                        Begitu pembeli melakukan pemesanan produk (baik langsung di halaman produk maupun paket bundling), pesanan otomatis muncul di tabel <strong>Riwayat Penjualan &amp; Komisi</strong> di bawah ini!
+                                        {{ $affSettings['step_3_desc'] }}
                                     </p>
                                 </div>
                             </div>

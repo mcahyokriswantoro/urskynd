@@ -113,6 +113,12 @@
                 🧴 Komisi Per Produk ({{ count($products ?? []) }})
             </button>
 
+            <button type="button" @click="tab = 'settings'"
+                    :class="tab === 'settings' ? 'bg-[#9A6A52] text-white shadow' : 'text-slate-600 hover:bg-slate-100'"
+                    class="px-4 py-2.5 rounded-xl text-xs font-bold whitespace-nowrap transition-colors cursor-pointer">
+                ⚙️ Pengaturan Teks &amp; Komisi
+            </button>
+
             <button type="button" @click="tab = 'create_sale'"
                     :class="tab === 'create_sale' ? 'bg-[#9A6A52] text-white shadow' : 'text-slate-600 hover:bg-slate-100'"
                     class="px-4 py-2.5 rounded-xl text-xs font-bold whitespace-nowrap transition-colors cursor-pointer">
@@ -484,6 +490,179 @@
                     </div>
                 </form>
             @endif
+        </section>
+
+        <!-- TAB 5: PENGATURAN TEKS PENDAFTARAN, DASHBOARD MITRA & KOMISI DEFAULT -->
+        <section x-show="tab === 'settings'" style="display: none;" class="bg-white rounded-2xl border border-slate-200 shadow-xs p-6">
+            <div class="mb-6 pb-4 border-b border-slate-200">
+                <h2 class="text-base font-bold text-slate-900">⚙️ Pengaturan Teks Mitra, Keuntungan Pendaftaran &amp; Persentase Komisi</h2>
+                <p class="text-xs text-slate-500 mt-0.5">
+                    Sesuaikan seluruh kata-kata di halaman Pendaftaran Mitra (`/register`), halaman Dashboard Mitra (`/affiliate`), persentase komisi default, dan minimal pencairan saldo.
+                </p>
+            </div>
+
+            <form action="{{ route('admin.affiliates.settings.update') }}" method="POST" class="space-y-6">
+                @csrf
+                @method('PUT')
+
+                <!-- Bagian 1: Angka Komisi, Minimal Withdraw & Masa Aktif Cookie -->
+                <div class="p-5 rounded-2xl bg-amber-50/60 border border-amber-200 space-y-4">
+                    <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
+                        <span>💰</span> 1. Pengaturan Persentase Komisi &amp; Aturan Pencairan
+                    </h3>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Komisi Default Mitra Baru (%)</label>
+                            <input type="number" step="0.5" min="1" max="50" name="default_commission_rate" value="{{ $settings['default_commission_rate'] }}" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-xs font-bold">
+                            <p class="text-[11px] text-slate-500 mt-1">Persentase komisi otomatis saat afiliator baru mendaftar.</p>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Minimal Pencairan / Withdraw (Rp)</label>
+                            <input type="number" min="1000" step="1000" name="min_withdrawal_amount" value="{{ $settings['min_withdrawal_amount'] }}" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-xs font-bold">
+                            <p class="text-[11px] text-slate-500 mt-1">Batas minimal saldo siap cair yang bisa ditarik mitra.</p>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Masa Aktif Cookie Link (Hari)</label>
+                            <input type="number" min="1" max="365" name="cookie_days" value="{{ $settings['cookie_days'] }}" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-xs font-bold">
+                            <p class="text-[11px] text-slate-500 mt-1">Berapa hari kode referral menempel di browser pembeli.</p>
+                        </div>
+                    </div>
+
+                    <label class="inline-flex items-center gap-2.5 text-xs font-bold text-amber-900 bg-white px-4 py-2.5 rounded-xl border border-amber-300 cursor-pointer">
+                        <input type="checkbox" name="apply_rate_to_all" value="1" class="rounded text-[#9A6A52]">
+                        <span>Terapkan juga persentase komisi di atas secara massal ke <strong>seluruh Mitra &amp; seluruh Produk</strong> yang sudah ada sekarang</span>
+                    </label>
+                </div>
+
+                <!-- Bagian 2: Kata-Kata di Halaman Register (/register) -->
+                <div class="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-4">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
+                            <span>📝</span> 2. Kata-Kata &amp; Keuntungan di Halaman Pendaftaran (`/register`)
+                        </h3>
+                        <a href="{{ route('register', ['type' => 'affiliate']) }}" target="_blank" class="text-xs font-bold text-[#9A6A52] hover:underline">
+                            Lihat Halaman Register &nearr;
+                        </a>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Badge Tombol Mitra</label>
+                            <input type="text" name="register_badge" value="{{ $settings['register_badge'] }}" required class="w-full px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-xs font-bold">
+                        </div>
+                        <div class="sm:col-span-2">
+                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Judul Form Saat Pilih Mitra</label>
+                            <input type="text" name="register_title" value="{{ $settings['register_title'] }}" required class="w-full px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-xs font-semibold">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Subjudul Form Pendaftaran Mitra</label>
+                        <input type="text" name="register_subtitle" value="{{ $settings['register_subtitle'] }}" required class="w-full px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-xs">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Judul Kotak Keuntungan Mitra (Kotak Hijau)</label>
+                        <input type="text" name="register_benefits_title" value="{{ $settings['register_benefits_title'] }}" required class="w-full px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-xs font-bold">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Daftar Poin Keuntungan Menjadi Mitra (1 baris = 1 poin bullet)</label>
+                        <textarea name="register_benefits" rows="4" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-xs leading-relaxed">{{ $settings['register_benefits'] }}</textarea>
+                        <p class="text-[11px] text-slate-500 mt-1">Pisahkan setiap poin dengan baris baru (Enter).</p>
+                    </div>
+                </div>
+
+                <!-- Bagian 3: Kata-Kata di Halaman Dashboard Mitra (/affiliate) -->
+                <div class="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-4">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
+                            <span>🤝</span> 3. Kata-Kata di Halaman Dashboard Afiliator (`/affiliate`)
+                        </h3>
+                        <a href="{{ route('affiliate.index') }}" target="_blank" class="text-xs font-bold text-[#9A6A52] hover:underline">
+                            Lihat Dashboard Mitra &nearr;
+                        </a>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Badge Header</label>
+                            <input type="text" name="dashboard_badge" value="{{ $settings['dashboard_badge'] }}" required class="w-full px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-xs font-bold">
+                        </div>
+                        <div class="sm:col-span-2">
+                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Judul Halaman Mitra</label>
+                            <input type="text" name="dashboard_title" value="{{ $settings['dashboard_title'] }}" required class="w-full px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-xs font-bold">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Subjudul Halaman Mitra</label>
+                        <input type="text" name="dashboard_subtitle" value="{{ $settings['dashboard_subtitle'] }}" required class="w-full px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-xs">
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Judul Katalog Link Produk</label>
+                            <input type="text" name="catalog_title" value="{{ $settings['catalog_title'] }}" required class="w-full px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-xs font-bold">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Deskripsi Katalog Link Produk</label>
+                            <input type="text" name="catalog_subtitle" value="{{ $settings['catalog_subtitle'] }}" required class="w-full px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-xs">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Badge Banner Link Paket Bundling</label>
+                            <input type="text" name="bundle_banner_badge" value="{{ $settings['bundle_banner_badge'] }}" required class="w-full px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-xs font-bold">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Teks Banner Link Paket Bundling</label>
+                            <input type="text" name="bundle_banner_text" value="{{ $settings['bundle_banner_text'] }}" required class="w-full px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-xs">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-slate-200">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Judul Seksi Cara Kerja Otomatis</label>
+                            <input type="text" name="how_it_works_title" value="{{ $settings['how_it_works_title'] }}" required class="w-full px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-xs font-bold">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Subjudul Seksi Cara Kerja Otomatis</label>
+                            <input type="text" name="how_it_works_subtitle" value="{{ $settings['how_it_works_subtitle'] }}" required class="w-full px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-xs">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="p-3.5 rounded-xl bg-white border border-slate-200 space-y-2">
+                            <label class="block text-[11px] font-bold text-slate-700 uppercase">Langkah 1 (Judul &amp; Penjelasan)</label>
+                            <input type="text" name="step_1_title" value="{{ $settings['step_1_title'] }}" required class="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-bold">
+                            <textarea name="step_1_desc" rows="3" required class="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs">{{ $settings['step_1_desc'] }}</textarea>
+                        </div>
+
+                        <div class="p-3.5 rounded-xl bg-white border border-slate-200 space-y-2">
+                            <label class="block text-[11px] font-bold text-slate-700 uppercase">Langkah 2 (Judul &amp; Penjelasan)</label>
+                            <input type="text" name="step_2_title" value="{{ $settings['step_2_title'] }}" required class="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-bold">
+                            <textarea name="step_2_desc" rows="3" required class="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs">{{ $settings['step_2_desc'] }}</textarea>
+                        </div>
+
+                        <div class="p-3.5 rounded-xl bg-white border border-slate-200 space-y-2">
+                            <label class="block text-[11px] font-bold text-slate-700 uppercase">Langkah 3 (Judul &amp; Penjelasan)</label>
+                            <input type="text" name="step_3_title" value="{{ $settings['step_3_title'] }}" required class="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-bold">
+                            <textarea name="step_3_desc" rows="3" required class="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs">{{ $settings['step_3_desc'] }}</textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex justify-end">
+                    <button type="submit" class="px-6 py-3 rounded-xl bg-[#9A6A52] hover:bg-[#845843] text-white text-xs font-bold shadow-md cursor-pointer">
+                        💾 Simpan Semua Pengaturan Mitra &amp; Komisi
+                    </button>
+                </div>
+            </form>
         </section>
 
     </div>
