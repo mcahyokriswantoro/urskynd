@@ -57,29 +57,10 @@
             @endif
         @endauth
 
-        <!-- Urgent Flash Sale Banner -->
-        @if($g['banner_title'] || $g['banner_subtitle'])
-        <div class="mb-8 p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-red-600 via-rose-600 to-brand-primary text-white shadow-soft-lg flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div class="flex items-center gap-3 text-center sm:text-left">
-                <span class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-xl shrink-0 animate-pulse">🔥</span>
-                <div>
-                    <p class="font-extrabold text-sm sm:text-base tracking-wide uppercase">
-                        {{ $g['banner_title'] }}
-                        <span class="normal-case font-semibold text-white/80">({{ \Carbon\Carbon::now()->locale('id')->isoFormat('D MMMM Y') }})</span>
-                    </p>
-                    <p class="text-xs text-white/90">{{ $g['banner_subtitle'] }}</p>
-                </div>
-            </div>
-            @if($g['show_countdown'])
-            <div class="flex items-center gap-2 bg-black/25 px-4 py-2 rounded-xl backdrop-blur-xs border border-white/20 shrink-0">
-                <span class="text-xs font-medium uppercase tracking-wider text-rose-200">Sisa Promo Hari Ini:</span>
-                <div class="font-mono font-bold text-sm sm:text-base flex items-center gap-1">
-                    <span class="bg-black/40 px-2 py-1 rounded" x-text="String(hours).padStart(2, '0')">00</span>:
-                    <span class="bg-black/40 px-2 py-1 rounded" x-text="String(minutes).padStart(2, '0')">00</span>:
-                    <span class="bg-black/40 px-2 py-1 rounded" x-text="String(seconds).padStart(2, '0')">00</span>
-                </div>
-            </div>
-            @endif
+        <!-- Promo Banner Image -->
+        @if($bannerImg = PageContent::imageUrl($g['banner_image'] ?? 'images/promo-banner.jpg'))
+        <div class="mb-10 max-w-2xl mx-auto rounded-3xl overflow-hidden shadow-soft-lg border border-brand-border bg-white">
+            <img src="{{ $bannerImg }}" alt="{{ $g['banner_title'] ?: 'Promo Spesial URSKYND' }}" class="w-full h-auto block">
         </div>
         @endif
 

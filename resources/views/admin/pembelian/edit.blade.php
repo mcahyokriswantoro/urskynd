@@ -81,20 +81,24 @@
                 </div>
 
                 <hr class="border-slate-100">
-                <h2 class="text-sm font-bold text-slate-900">🔥 Banner Promo</h2>
+                <h2 class="text-sm font-bold text-slate-900">🔥 Banner Promo Atas</h2>
                 <div class="grid grid-cols-1 gap-5">
-                    <div>
-                        <label class="{{ $labelCls }}">Judul Banner</label>
-                        <input type="text" name="general[banner_title]" value="{{ old('general.banner_title', $g['banner_title']) }}" class="{{ $inputCls }}">
+                    <div x-data="{ preview: @js(\App\Models\PageContent::imageUrl($g['banner_image'] ?? 'images/promo-banner.jpg')), removed: false }">
+                        <label class="{{ $labelCls }}">Gambar Poster Banner Promo</label>
+                        <div class="flex items-start gap-4">
+                            <div class="w-32 h-40 rounded-xl border-2 border-dashed border-slate-200 bg-slate-50 overflow-hidden flex items-center justify-center shrink-0">
+                                <template x-if="preview && !removed"><img :src="preview" class="w-full h-full object-contain"></template>
+                                <template x-if="!preview || removed"><span class="text-[10px] text-slate-400">Tanpa banner</span></template>
+                            </div>
+                            <div class="space-y-2 text-xs">
+                                <input type="file" name="general[banner_image_file]" accept="image/*" @change="const f=$event.target.files[0]; if(f){ preview = URL.createObjectURL(f); removed=false }" class="text-xs file:mr-3 file:px-3 file:py-1.5 file:rounded-lg file:border-0 file:bg-[#9A6A52]/10 file:text-[#9A6A52] file:font-semibold">
+                                <label class="flex items-center gap-2 text-slate-600" x-show="preview">
+                                    <input type="checkbox" name="general[remove_banner_image]" value="1" x-model="removed" class="rounded text-rose-500"> Sembunyikan banner
+                                </label>
+                                <p class="text-[10px] text-slate-400">JPG/PNG/WEBP, maks 4MB. Menampilkan poster promo paling atas halaman.</p>
+                            </div>
+                        </div>
                     </div>
-                    <div>
-                        <label class="{{ $labelCls }}">Sub-judul Banner</label>
-                        <input type="text" name="general[banner_subtitle]" value="{{ old('general.banner_subtitle', $g['banner_subtitle']) }}" class="{{ $inputCls }}">
-                    </div>
-                    <label class="inline-flex items-center gap-2 text-xs font-semibold text-slate-700">
-                        <input type="checkbox" name="general[show_countdown]" value="1" @checked(old('general.show_countdown', $g['show_countdown'])) class="rounded text-[#9A6A52] focus:ring-[#9A6A52]">
-                        Tampilkan hitung mundur (countdown) promo harian
-                    </label>
                 </div>
 
                 <hr class="border-slate-100">

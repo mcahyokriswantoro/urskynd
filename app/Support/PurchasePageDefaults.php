@@ -15,6 +15,7 @@ class PurchasePageDefaults
             'general' => [
                 'whatsapp_number' => '6285282784356',
                 'whatsapp_display' => '085282784356',
+                'banner_image' => 'images/promo-banner.jpg',
                 'banner_title' => 'PROMO SPESIAL HARI INI: GRATIS ONGKIR SE-INDONESIA',
                 'banner_subtitle' => 'Dapatkan diskon paket hemat s/d 35% + Free Konsultasi Dokter Kulit resmi URSKYND!',
                 'show_countdown' => true,

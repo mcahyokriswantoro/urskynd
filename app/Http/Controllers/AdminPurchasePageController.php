@@ -38,6 +38,7 @@ class AdminPurchasePageController extends Controller
             'general' => 'required|array',
             'general.whatsapp_number' => ['required', 'regex:/^[0-9]{8,15}$/'],
             'general.hero_title' => 'required|string|max:200',
+            'general.banner_image_file' => 'nullable|image|max:4096',
             'general.hero_image_file' => 'nullable|image|max:4096',
             'general.qris_image_file' => 'nullable|image|max:4096',
             'problem' => 'required|array',
@@ -68,10 +69,20 @@ class AdminPurchasePageController extends Controller
 
         // General
         $general = collect($request->input('general', []))
-            ->except(['hero_image_file', 'remove_hero_image', 'qris_image_file', 'remove_qris_image'])
+            ->except(['banner_image_file', 'remove_banner_image', 'hero_image_file', 'remove_hero_image', 'qris_image_file', 'remove_qris_image'])
             ->map(fn ($v) => is_string($v) ? trim($v) : $v)
             ->all();
         $general['show_countdown'] = $request->boolean('general.show_countdown');
+        $general['banner_image'] = $old['general']['banner_image'] ?? 'images/promo-banner.jpg';
+        if ($request->boolean('general.remove_banner_image')) {
+            $this->deleteImage($general['banner_image']);
+            $general['banner_image'] = null;
+        }
+        if ($file = $request->file('general.banner_image_file')) {
+            $this->deleteImage($general['banner_image']);
+            $general['banner_image'] = $this->storeImage($file);
+        }
+
         $general['hero_image'] = $old['general']['hero_image'] ?? null;
         if ($request->boolean('general.remove_hero_image')) {
             $this->deleteImage($general['hero_image']);
@@ -189,7 +200,7 @@ class AdminPurchasePageController extends Controller
     private function cleanupUnusedImages(array $old, array $new): void
     {
         $collect = function (array $c) {
-            $paths = [$c['general']['hero_image'] ?? null, $c['general']['qris_image'] ?? null];
+            $paths = [$c['general']['banner_image'] ?? null, $c['general']['hero_image'] ?? null, $c['general']['qris_image'] ?? null];
             foreach ($c['packages'] ?? [] as $p) $paths[] = $p['image'] ?? null;
             foreach ($c['products'] ?? [] as $p) $paths[] = $p['image'] ?? null;
             foreach ($c['testimonials'] ?? [] as $t) $paths[] = $t['photo'] ?? null;
