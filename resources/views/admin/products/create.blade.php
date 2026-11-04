@@ -22,7 +22,7 @@
             </div>
         @endif
 
-        <form action="{{ route('admin.products.store') }}" method="POST" class="bg-white p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-xs space-y-6">
+        <form action="{{ route('admin.products.store') }}" method="POST" enctype="multipart/form-data" class="bg-white p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-xs space-y-6" x-data="{ imagePreview: null }">
             @csrf
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -37,7 +37,7 @@
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
+            <div class="grid grid-cols-1 sm:grid-cols-4 gap-5">
                 <div>
                     <label class="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">Kategori Skincare <span class="text-rose-500">*</span></label>
                     <select name="product_category_id" required class="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 focus:border-[#9A6A52] focus:ring-1 focus:ring-[#9A6A52] bg-slate-50">
@@ -51,6 +51,11 @@
                 <div>
                     <label class="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">Harga Resmi (Rp) <span class="text-rose-500">*</span></label>
                     <input type="number" name="price" value="{{ old('price') }}" placeholder="Contoh: 149000" required class="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 focus:border-[#9A6A52] focus:ring-1 focus:ring-[#9A6A52] bg-slate-50">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">Komisi Afiliasi (%)</label>
+                    <input type="number" step="0.5" min="1" max="50" name="commission_rate" value="{{ old('commission_rate', 10) }}" class="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 focus:border-[#9A6A52] focus:ring-1 focus:ring-[#9A6A52] bg-slate-50">
                 </div>
 
                 <div>
@@ -74,10 +79,40 @@
                 </div>
             </div>
 
+            <!-- Upload Gambar Produk -->
             <div>
-                <label class="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">URL Gambar Produk / Path Lokal</label>
-                <input type="text" name="image" value="{{ old('image') }}" placeholder="Contoh: images/products/serum.jpeg atau URL https://..." class="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 focus:border-[#9A6A52] focus:ring-1 focus:ring-[#9A6A52] bg-slate-50">
-                <p class="text-[11px] text-slate-400 mt-1">Gunakan URL gambar online atau letakkan di folder public/images/products/</p>
+                <label class="block text-xs font-bold text-slate-700 mb-2 uppercase tracking-wider">Foto / Gambar Produk</label>
+                <div class="flex flex-col sm:flex-row items-start sm:items-center gap-5 p-4 rounded-2xl border border-dashed border-slate-300 bg-slate-50/70">
+                    <div class="w-28 h-28 rounded-2xl border border-slate-200 bg-white overflow-hidden flex items-center justify-center shrink-0 shadow-xs">
+                        <template x-if="imagePreview">
+                            <img :src="imagePreview" alt="Preview Produk" class="w-full h-full object-cover">
+                        </template>
+                        <template x-if="!imagePreview">
+                            <div class="text-center text-slate-400 p-2">
+                                <span class="text-2xl block mb-1">🧴</span>
+                                <span class="text-[10px]">Belum ada foto</span>
+                            </div>
+                        </template>
+                    </div>
+
+                    <div class="flex-1 space-y-2">
+                        <input type="file"
+                               name="image_file"
+                               accept="image/jpeg,image/png,image/jpg,image/webp"
+                               @change="
+                                   const file = $event.target.files[0];
+                                   if (file) {
+                                       const reader = new FileReader();
+                                       reader.onload = (e) => { imagePreview = e.target.result };
+                                       reader.readAsDataURL(file);
+                                   } else {
+                                       imagePreview = null;
+                                   }
+                               "
+                               class="block w-full text-xs text-slate-600 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-[#9A6A52] file:text-white hover:file:bg-[#845843] file:cursor-pointer">
+                        <p class="text-[11px] text-slate-500">Upload langsung foto produk dari komputer/HP Anda (Format: JPG, PNG, WEBP, maks. 4MB).</p>
+                    </div>
+                </div>
             </div>
 
             <div>
