@@ -401,12 +401,20 @@
                         <textarea name="shipping_address" rows="3" placeholder="Masukkan nama jalan, nomor rumah, RT/RW, Kelurahan, Kecamatan, Kota/Kabupaten, dan Kode Pos..." class="w-full px-4 py-3 rounded-xl border-brand-border bg-white text-brand-text text-sm focus:border-brand-primary focus:ring-brand-primary/20" required>{{ old('shipping_address') }}</textarea>
                     </div>
 
-                    <!-- Catatan Tambahan -->
-                    <div>
-                        <label class="block text-xs font-bold text-brand-text uppercase tracking-wider mb-2">
-                            Catatan Khusus (Opsional)
-                        </label>
-                        <input type="text" name="notes" value="{{ old('notes') }}" placeholder="Contoh: Titip ke satpam jika saya belum pulang / warna pouch favorit..." class="w-full px-4 py-3 rounded-xl border-brand-border bg-white text-brand-text text-sm focus:border-brand-primary focus:ring-brand-primary/20">
+                    <!-- Kode Referral Mitra & Catatan Tambahan -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-brand-text uppercase tracking-wider mb-2">
+                                Kode Referral / Mitra (Opsional)
+                            </label>
+                            <input type="text" name="affiliate_code" value="{{ old('affiliate_code', $affiliateRef ?? '') }}" placeholder="Contoh: URS-SARAH" class="w-full px-4 py-3 rounded-xl border-brand-border bg-white text-brand-text text-sm uppercase font-mono focus:border-brand-primary focus:ring-brand-primary/20">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-brand-text uppercase tracking-wider mb-2">
+                                Catatan Khusus (Opsional)
+                            </label>
+                            <input type="text" name="notes" value="{{ old('notes') }}" placeholder="Contoh: Titip ke satpam / warna pouch..." class="w-full px-4 py-3 rounded-xl border-brand-border bg-white text-brand-text text-sm focus:border-brand-primary focus:ring-brand-primary/20">
+                        </div>
                     </div>
 
                     <!-- Submit Button -->

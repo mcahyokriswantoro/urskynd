@@ -19,6 +19,15 @@ class User extends Authenticatable
         'email',
         'password',
         'role',
+        'is_affiliate',
+        'affiliate_code',
+        'affiliate_status',
+        'commission_rate',
+        'commission_balance',
+        'total_commission_earned',
+        'bank_name',
+        'bank_account_number',
+        'bank_account_holder',
         'avatar',
         'phone',
         'address',
@@ -47,6 +56,10 @@ class User extends Authenticatable
             'password' => 'hashed',
             'birth_date' => 'date',
             'onboarding_completed' => 'boolean',
+            'is_affiliate' => 'boolean',
+            'commission_rate' => 'float',
+            'commission_balance' => 'integer',
+            'total_commission_earned' => 'integer',
             'points' => 'integer',
         ];
     }
@@ -61,6 +74,41 @@ class User extends Authenticatable
     public function isUser(): bool
     {
         return $this->role === 'user';
+    }
+
+    public function isAffiliate(): bool
+    {
+        return (bool) $this->is_affiliate;
+    }
+
+    public static function generateUniqueAffiliateCode(string $name, ?string $preferred = null): string
+    {
+        $base = $preferred
+            ? strtoupper(preg_replace('/[^A-Za-z0-9]/', '', $preferred))
+            : 'URS' . strtoupper(substr(preg_replace('/[^A-Za-z0-9]/', '', $name), 0, 5)) . rand(10, 99);
+
+        if (strlen($base) < 4) {
+            $base = 'URSMITRA' . rand(100, 999);
+        }
+
+        $code = substr($base, 0, 20);
+        $counter = 1;
+        while (static::where('affiliate_code', $code)->exists()) {
+            $code = substr($base, 0, 16) . $counter . rand(1, 9);
+            $counter++;
+        }
+
+        return $code;
+    }
+
+    public function getFormattedCommissionBalanceAttribute(): string
+    {
+        return 'Rp ' . number_format((int) $this->commission_balance, 0, ',', '.');
+    }
+
+    public function getFormattedTotalCommissionAttribute(): string
+    {
+        return 'Rp ' . number_format((int) $this->total_commission_earned, 0, ',', '.');
     }
 
     public function getAvatarUrlAttribute(): string
@@ -135,5 +183,15 @@ class User extends Authenticatable
     public function recommendations()
     {
         return $this->hasMany(Recommendation::class);
+    }
+
+    public function affiliateSales()
+    {
+        return $this->hasMany(AffiliateSale::class, 'affiliate_id')->latest();
+    }
+
+    public function affiliateWithdrawals()
+    {
+        return $this->hasMany(AffiliateWithdrawal::class, 'affiliate_id')->latest();
     }
 }

@@ -1,0 +1,212 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\AffiliateSale;
+use App\Models\AffiliateWithdrawal;
+use App\Models\User;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
+
+class AdminAffiliateController extends Controller
+{
+    /**
+     * Tampilkan halaman manajemen Mitra Afiliator, Penjualan & Pencairan Komisi di Panel Admin.
+     */
+    public function index()
+    {
+        $affiliates = User::where('is_affiliate', true)
+            ->withCount([
+                'affiliateSales as total_sales_count',
+                'affiliateSales as approved_sales_count' => fn ($q) => $q->where('status', 'approved'),
+            ])
+            ->latest()
+            ->get();
+
+        $sales = AffiliateSale::with('affiliate')->latest()->get();
+        $withdrawals = AffiliateWithdrawal::with('affiliate')->latest()->get();
+
+        $stats = [
+            'total_affiliates' => $affiliates->count(),
+            'active_affiliates' => $affiliates->where('affiliate_status', 'active')->count(),
+            'pending_sales_count' => $sales->where('status', 'pending')->count(),
+            'approved_sales_amount' => (int) $sales->where('status', 'approved')->sum('sale_amount'),
+            'total_commission_accrued' => (int) $sales->where('status', 'approved')->sum('commission_amount'),
+            'pending_withdrawals_count' => $withdrawals->where('status', 'pending')->count(),
+            'pending_withdrawals_amount' => (int) $withdrawals->where('status', 'pending')->sum('amount'),
+            'approved_withdrawals_amount' => (int) $withdrawals->where('status', 'approved')->sum('amount'),
+        ];
+
+        $packages = AdminPurchasePageController::content()['packages'] ?? [];
+
+        return view('admin.affiliates.index', compact('affiliates', 'sales', 'withdrawals', 'stats', 'packages'));
+    }
+
+    /**
+     * Catat penjualan afiliasi baru oleh Admin (bisa langsung disetujui & menambah saldo komisi mitra).
+     */
+    public function storeSale(Request $request)
+    {
+        $validated = $request->validate([
+            'affiliate_id' => ['required', 'exists:users,id'],
+            'customer_name' => ['required', 'string', 'max:100'],
+            'customer_phone' => ['required', 'string', 'max:30'],
+            'package_name' => ['required', 'string', 'max:150'],
+            'sale_amount' => ['required', 'integer', 'min:1000'],
+            'notes' => ['nullable', 'string', 'max:500'],
+            'auto_approve' => ['nullable', 'boolean'],
+        ]);
+
+        $affiliate = User::findOrFail($validated['affiliate_id']);
+        $saleAmount = (int) $validated['sale_amount'];
+        $rate = (float) ($affiliate->commission_rate ?: 10);
+        $commissionAmount = (int) round($saleAmount * ($rate / 100));
+        $approveNow = $request->boolean('auto_approve', true);
+
+        DB::transaction(function () use ($affiliate, $validated, $saleAmount, $rate, $commissionAmount, $approveNow) {
+            AffiliateSale::create([
+                'affiliate_id' => $affiliate->id,
+                'order_code' => 'ORD-' . now()->format('ymd') . '-' . strtoupper(substr(uniqid(), -5)),
+                'customer_name' => $validated['customer_name'],
+                'customer_phone' => $validated['customer_phone'],
+                'package_name' => $validated['package_name'],
+                'sale_amount' => $saleAmount,
+                'commission_rate' => $rate,
+                'commission_amount' => $commissionAmount,
+                'payment_method' => 'QRIS Resmi URSKYND',
+                'notes' => $validated['notes'] ?? null,
+                'status' => $approveNow ? 'approved' : 'pending',
+                'approved_at' => $approveNow ? now() : null,
+            ]);
+
+            if ($approveNow) {
+                $affiliate->increment('commission_balance', $commissionAmount);
+                $affiliate->increment('total_commission_earned', $commissionAmount);
+            }
+        });
+
+        return back()->with('success', 'Penjualan mitra ' . $affiliate->name . ' berhasil dicatat' . ($approveNow ? ' dan komisi Rp ' . number_format($commissionAmount, 0, ',', '.') . ' telah masuk ke saldo mitra!' : '.'));
+    }
+
+    /**
+     * Setujui atau tolak penjualan afiliasi (otomatis menyesuaikan saldo komisi mitra).
+     */
+    public function updateSaleStatus(Request $request, AffiliateSale $sale)
+    {
+        $validated = $request->validate([
+            'status' => ['required', 'in:pending,approved,rejected'],
+        ]);
+
+        $newStatus = $validated['status'];
+        $oldStatus = $sale->status;
+
+        if ($newStatus === $oldStatus) {
+            return back();
+        }
+
+        DB::transaction(function () use ($sale, $oldStatus, $newStatus) {
+            $affiliate = User::lockForUpdate()->findOrFail($sale->affiliate_id);
+            $commission = (int) $sale->commission_amount;
+
+            // Jika sebelumnya belum approved dan sekarang approved -> tambah saldo komisi
+            if ($oldStatus !== 'approved' && $newStatus === 'approved') {
+                $affiliate->update([
+                    'commission_balance' => $affiliate->commission_balance + $commission,
+                    'total_commission_earned' => $affiliate->total_commission_earned + $commission,
+                ]);
+                $sale->update([
+                    'status' => 'approved',
+                    'approved_at' => now(),
+                ]);
+            }
+            // Jika sebelumnya sudah approved lalu dibatalkan/ditolak -> kurangi saldo komisi
+            elseif ($oldStatus === 'approved' && $newStatus !== 'approved') {
+                $affiliate->update([
+                    'commission_balance' => max(0, $affiliate->commission_balance - $commission),
+                    'total_commission_earned' => max(0, $affiliate->total_commission_earned - $commission),
+                ]);
+                $sale->update([
+                    'status' => $newStatus,
+                    'approved_at' => null,
+                ]);
+            } else {
+                $sale->update(['status' => $newStatus]);
+            }
+        });
+
+        $msg = $newStatus === 'approved'
+            ? 'Penjualan ' . $sale->order_code . ' disetujui! Komisi ' . $sale->formatted_commission_amount . ' telah ditambahkan ke saldo ' . ($sale->affiliate->name ?? 'Mitra') . '.'
+            : 'Status penjualan ' . $sale->order_code . ' diperbarui menjadi ' . strtoupper($newStatus) . '.';
+
+        return back()->with('success', $msg);
+    }
+
+    /**
+     * Proses pencairan komisi (Approve = sudah ditransfer, Reject = tolak & kembalikan saldo mitra).
+     */
+    public function updateWithdrawalStatus(Request $request, AffiliateWithdrawal $withdrawal)
+    {
+        $validated = $request->validate([
+            'status' => ['required', 'in:approved,rejected'],
+            'admin_notes' => ['nullable', 'string', 'max:500'],
+        ]);
+
+        if ($withdrawal->status !== 'pending') {
+            return back()->withErrors(['withdrawal' => 'Permintaan pencairan ini sudah diproses sebelumnya.']);
+        }
+
+        $newStatus = $validated['status'];
+
+        DB::transaction(function () use ($withdrawal, $newStatus, $validated) {
+            $affiliate = User::lockForUpdate()->findOrFail($withdrawal->affiliate_id);
+
+            if ($newStatus === 'rejected') {
+                // Kembalikan saldo komisi ke akun mitra
+                $affiliate->update([
+                    'commission_balance' => $affiliate->commission_balance + (int) $withdrawal->amount,
+                ]);
+            }
+
+            $withdrawal->update([
+                'status' => $newStatus,
+                'admin_notes' => $validated['admin_notes'] ?? ($newStatus === 'approved' ? 'Komisi telah ditransfer ke rekening mitra.' : 'Permintaan pencairan ditolak, saldo dikembalikan.'),
+                'processed_at' => now(),
+            ]);
+        });
+
+        $msg = $newStatus === 'approved'
+            ? 'Pencairan komisi ' . $withdrawal->withdrawal_code . ' (' . $withdrawal->formatted_amount . ') berhasil ditandai SUDAH DITRANSFER.'
+            : 'Pencairan komisi ' . $withdrawal->withdrawal_code . ' ditolak dan saldo telah dikembalikan ke akun mitra.';
+
+        return back()->with('success', $msg);
+    }
+
+    /**
+     * Update pengaturan komisi, kode afiliasi, status, dan rekening mitra.
+     */
+    public function updateAffiliate(Request $request, User $user)
+    {
+        $validated = $request->validate([
+            'affiliate_code' => ['required', 'string', 'alpha_num', 'min:4', 'max:20', Rule::unique('users', 'affiliate_code')->ignore($user->id)],
+            'commission_rate' => ['required', 'numeric', 'min:1', 'max:50'],
+            'affiliate_status' => ['required', 'in:active,suspended'],
+            'bank_name' => ['nullable', 'string', 'max:60'],
+            'bank_account_number' => ['nullable', 'string', 'max:60'],
+            'bank_account_holder' => ['nullable', 'string', 'max:120'],
+        ]);
+
+        $user->update([
+            'is_affiliate' => true,
+            'affiliate_code' => strtoupper($validated['affiliate_code']),
+            'commission_rate' => (float) $validated['commission_rate'],
+            'affiliate_status' => $validated['affiliate_status'],
+            'bank_name' => $validated['bank_name'] ?? $user->bank_name,
+            'bank_account_number' => $validated['bank_account_number'] ?? $user->bank_account_number,
+            'bank_account_holder' => $validated['bank_account_holder'] ?? $user->bank_account_holder,
+        ]);
+
+        return back()->with('success', 'Pengaturan mitra ' . $user->name . ' (Komisi ' . $user->commission_rate . '%) berhasil diperbarui.');
+    }
+}
+

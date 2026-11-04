@@ -71,6 +71,13 @@ Route::middleware('auth')->group(function () {
     // Gamification & Rewards
     Route::get('/rewards', [\App\Http\Controllers\RewardController::class, 'index'])->name('rewards.index');
 
+    // Mitra & Afiliator (Komisi & Withdraw)
+    Route::get('/affiliate', [\App\Http\Controllers\AffiliateController::class, 'index'])->name('affiliate.index');
+    Route::post('/affiliate/join', [\App\Http\Controllers\AffiliateController::class, 'join'])->name('affiliate.join');
+    Route::patch('/affiliate/bank', [\App\Http\Controllers\AffiliateController::class, 'updateBank'])->name('affiliate.bank.update');
+    Route::post('/affiliate/sales', [\App\Http\Controllers\AffiliateController::class, 'recordSale'])->name('affiliate.sales.store');
+    Route::post('/affiliate/withdraw', [\App\Http\Controllers\AffiliateController::class, 'requestWithdrawal'])->name('affiliate.withdraw');
+
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
@@ -94,6 +101,13 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     // Doctors & Consultations Management
     Route::resource('doctors', \App\Http\Controllers\AdminDoctorController::class)->except(['show']);
     Route::patch('/bookings/{booking}/status', [\App\Http\Controllers\AdminDoctorController::class, 'updateBooking'])->name('bookings.status');
+
+    // Mitra / Affiliates & Commissions Management
+    Route::get('/affiliates', [\App\Http\Controllers\AdminAffiliateController::class, 'index'])->name('affiliates.index');
+    Route::post('/affiliates/sales', [\App\Http\Controllers\AdminAffiliateController::class, 'storeSale'])->name('affiliates.sales.store');
+    Route::patch('/affiliates/sales/{sale}/status', [\App\Http\Controllers\AdminAffiliateController::class, 'updateSaleStatus'])->name('affiliates.sales.status');
+    Route::patch('/affiliates/withdrawals/{withdrawal}/status', [\App\Http\Controllers\AdminAffiliateController::class, 'updateWithdrawalStatus'])->name('affiliates.withdrawals.status');
+    Route::patch('/affiliates/{user}', [\App\Http\Controllers\AdminAffiliateController::class, 'updateAffiliate'])->name('affiliates.update');
 });
 
 require __DIR__.'/auth.php';

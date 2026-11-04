@@ -32,6 +32,10 @@ class AuthenticatedSessionController extends Controller
             return redirect()->route('admin.dashboard');
         }
 
+        if ($request->user()->isAffiliate()) {
+            return redirect()->intended(route('affiliate.index', absolute: false));
+        }
+
         return redirect()->intended(route('dashboard', absolute: false));
     }
 

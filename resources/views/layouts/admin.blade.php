@@ -72,6 +72,15 @@
                     Halaman Pembelian
                 </a>
 
+                <a href="{{ route('admin.affiliates.index') }}" 
+                   class="flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium transition-colors {{ request()->routeIs('admin.affiliates.*') ? 'bg-[#9A6A52] text-white font-semibold shadow-md shadow-[#9A6A52]/20' : 'text-slate-300 hover:bg-slate-800/80 hover:text-white' }}">
+                    <span class="flex items-center">
+                        <svg class="w-5 h-5 mr-3 {{ request()->routeIs('admin.affiliates.*') ? 'text-white' : 'text-[#E8B496]' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        Mitra &amp; Komisi
+                    </span>
+                    <span class="px-1.5 py-0.5 text-[9px] font-bold rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">Afiliasi</span>
+                </a>
+
                 <a href="{{ route('admin.doctors.index') }}" 
                    class="flex items-center px-3.5 py-2.5 rounded-xl text-sm font-medium transition-colors {{ request()->routeIs('admin.doctors.*') ? 'bg-[#9A6A52] text-white font-semibold shadow-md shadow-[#9A6A52]/20' : 'text-slate-300 hover:bg-slate-800/80 hover:text-white' }}">
                     <svg class="w-5 h-5 mr-3 {{ request()->routeIs('admin.doctors.*') ? 'text-white' : 'text-[#E8B496]' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
@@ -226,6 +235,7 @@
                         <a href="{{ route('admin.products.index') }}" @click="adminDrawerOpen = false" class="block px-3 py-2 rounded-lg hover:bg-slate-800 text-slate-300">Kelola Produk</a>
                         <a href="{{ route('admin.articles.index') }}" @click="adminDrawerOpen = false" class="block px-3 py-2 rounded-lg hover:bg-slate-800 text-slate-300">Kelola Berita</a>
                         <a href="{{ route('admin.pembelian.edit') }}" @click="adminDrawerOpen = false" class="block px-3 py-2 rounded-lg hover:bg-slate-800 text-slate-300">Halaman Pembelian</a>
+                        <a href="{{ route('admin.affiliates.index') }}" @click="adminDrawerOpen = false" class="block px-3 py-2 rounded-lg hover:bg-slate-800 text-slate-300">Mitra &amp; Komisi Afiliasi</a>
                         <a href="{{ route('admin.doctors.index') }}" @click="adminDrawerOpen = false" class="block px-3 py-2 rounded-lg hover:bg-slate-800 text-slate-300">Dokter & Konsultasi</a>
                         <a href="{{ route('admin.dashboard') }}#users-section" @click="adminDrawerOpen = false" class="block px-3 py-2 rounded-lg hover:bg-slate-800 text-slate-300">Manajemen Pengguna</a>
                         <a href="{{ route('admin.dashboard') }}#analyses-section" @click="adminDrawerOpen = false" class="block px-3 py-2 rounded-lg hover:bg-slate-800 text-slate-300">Log AI Skin Analyses</a>
