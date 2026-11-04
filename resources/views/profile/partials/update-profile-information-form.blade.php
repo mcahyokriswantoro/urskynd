@@ -107,6 +107,52 @@
             <x-input-error class="mt-2" :messages="$errors->get('address')" />
         </div>
 
+        @if($user->isAffiliate())
+            <!-- Pengaturan Rekening Tujuan Pencairan Komisi Mitra Afiliator -->
+            <div class="pt-4 mt-4 border-t border-brand-border space-y-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="text-base font-serif font-bold text-brand-text flex items-center gap-2">
+                            <span>🏦</span> Rekening Tujuan Pencairan Komisi
+                        </h3>
+                        <p class="text-xs text-brand-textAlt mt-0.5">
+                            Digunakan untuk transfer pencairan saldo komisi afiliator Anda (Kode Mitra: <span class="font-mono font-bold text-brand-primary">{{ $user->affiliate_code }}</span>).
+                        </p>
+                    </div>
+                    <a href="{{ route('affiliate.index') }}" class="text-xs font-bold text-brand-primary hover:underline shrink-0">
+                        Ke Dashboard Mitra &rarr;
+                    </a>
+                </div>
+
+                <div class="p-4 rounded-2xl bg-brand-cream/40 border border-brand-border space-y-4">
+                    <div>
+                        <x-input-label for="bank_name" value="Nama Bank / E-Wallet Tujuan" />
+                        <select id="bank_name" name="bank_name" class="mt-1 block w-full border-brand-border bg-white text-brand-text focus:border-brand-primary focus:ring-brand-primary/30 rounded-xl shadow-xs text-sm py-2.5 px-3.5">
+                            <option value="">-- Pilih Bank / E-Wallet --</option>
+                            @foreach(['BCA', 'BRI', 'Bank Mandiri', 'BNI', 'BSI (Bank Syariah Indonesia)', 'CIMB Niaga', 'SeaBank', 'Bank Jago', 'DANA', 'OVO', 'GoPay', 'ShopeePay'] as $bank)
+                                <option value="{{ $bank }}" @selected(old('bank_name', $user->bank_name) === $bank)>{{ $bank }}</option>
+                            @endforeach
+                        </select>
+                        <x-input-error class="mt-2" :messages="$errors->get('bank_name')" />
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <x-input-label for="bank_account_number" value="Nomor Rekening / No. E-Wallet" />
+                            <x-text-input id="bank_account_number" name="bank_account_number" type="text" class="mt-1 block w-full font-mono" :value="old('bank_account_number', $user->bank_account_number)" placeholder="Contoh: 1234567890" />
+                            <x-input-error class="mt-2" :messages="$errors->get('bank_account_number')" />
+                        </div>
+
+                        <div>
+                            <x-input-label for="bank_account_holder" value="Atas Nama Pemilik Rekening" />
+                            <x-text-input id="bank_account_holder" name="bank_account_holder" type="text" class="mt-1 block w-full" :value="old('bank_account_holder', $user->bank_account_holder ?: $user->name)" placeholder="Sesuai buku tabungan / aplikasi" />
+                            <x-input-error class="mt-2" :messages="$errors->get('bank_account_holder')" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        @endif
+
         <div class="flex items-center gap-4 pt-2">
             <x-primary-button>Simpan Perubahan</x-primary-button>
 

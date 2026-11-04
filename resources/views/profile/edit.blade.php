@@ -1,7 +1,15 @@
 <x-app-layout>
-    <div class="mb-6">
-        <h1 class="text-2xl font-serif font-bold text-brand-text mb-1">Pengaturan Profil</h1>
-        <p class="text-sm text-brand-textAlt">Kelola informasi akun dan kata sandimu.</p>
+    <div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 max-w-3xl">
+        <div>
+            <h1 class="text-2xl font-serif font-bold text-brand-text mb-1">Pengaturan Profil</h1>
+            <p class="text-sm text-brand-textAlt">Kelola informasi akun{{ $user->isAffiliate() ? ', rekening pencairan komisi mitra,' : '' }} dan kata sandimu.</p>
+        </div>
+        @if($user->isAffiliate())
+            <a href="{{ route('affiliate.index') }}" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-brand-primary/10 border border-brand-primary/25 text-brand-primary text-xs font-bold hover:bg-brand-primary hover:text-white transition-colors self-start sm:self-auto">
+                <span>💸</span>
+                <span>Mitra Aktif ({{ $user->affiliate_code }})</span>
+            </a>
+        @endif
     </div>
 
     <div class="space-y-6 max-w-3xl">
