@@ -52,6 +52,8 @@ class CartController extends Controller
 
         ShippingRateService::syncDefaultZoneKeywords();
         $shippingZones = ShippingZone::where('is_active', true)->orderBy('sort_order')->get();
+        $indonesiaRegions = ShippingRateService::indonesiaRegions();
+        $lamonganDistricts = ShippingRateService::lamonganDistricts();
         $popularLocations = ShippingRateService::popularLocations();
         $provinces = ShippingRateService::provinces();
         $detectedAffiliate = TrackAffiliateReferral::currentAffiliate($request);
@@ -61,6 +63,8 @@ class CartController extends Controller
             'user',
             'cartItems',
             'shippingZones',
+            'indonesiaRegions',
+            'lamonganDistricts',
             'popularLocations',
             'provinces',
             'detectedAffiliate',

@@ -28,6 +28,8 @@
         totalWeight: @js($totalWeight),
         totalKg: @js($totalKg),
         zones: @js($zonesPayload),
+        indonesiaRegions: @js($indonesiaRegions ?? []),
+        lamonganDistricts: @js($lamonganDistricts ?? []),
         popularLocations: @js($popularLocations),
         selectedZoneId: @js(old('shipping_zone_id', $defaultZone?->id)),
         province: @js(old('province', 'Jawa Timur')),
@@ -38,6 +40,10 @@
 
         get activeZone() {
             return this.zones.find(z => Number(z.id) === Number(this.selectedZoneId)) || this.zones[0] || null;
+        },
+
+        get citiesInProvince() {
+            return this.indonesiaRegions[this.province] || [];
         },
 
         get rawShippingCost() {
@@ -64,31 +70,69 @@
             return 'Rp ' + Number(n || 0).toLocaleString('id-ID');
         },
 
-        onCityChange() {
-            const c = (this.city || '').toLowerCase().trim();
-            if (c) {
-                const foundLoc = this.popularLocations.find(loc => loc.city.toLowerCase() === c || loc.city.toLowerCase().includes(c));
-                if (foundLoc && foundLoc.province) {
-                    this.province = foundLoc.province;
+        normRegion(s) {
+            return (s || '')
+                .toLowerCase()
+                .replace(/^(kabupaten|kab\.|kota adm\.|kota|kecamatan|kec\.)\s+/g, '')
+                .trim();
+        },
+
+        onProvinceChange() {
+            const provCities = this.indonesiaRegions[this.province] || [];
+            if (provCities.length > 0) {
+                const currentNorm = this.normRegion(this.city);
+                const belongs = provCities.some(c => this.normRegion(c) === currentNorm);
+                if (!belongs) {
+                    this.city = provCities[0];
                 }
             }
             this.autoDetectZone();
         },
 
+        onCityChange() {
+            const rawCity = (this.city || '').trim();
+            const cleanCity = this.normRegion(rawCity);
+
+            if (cleanCity.length >= 3) {
+                // 1. Cek kecocokan persis nama Kab/Kota di seluruh 38 Provinsi Indonesia
+                for (const [prov, cities] of Object.entries(this.indonesiaRegions)) {
+                    for (const c of cities) {
+                        if (c.toLowerCase() === rawCity.toLowerCase() || this.normRegion(c) === cleanCity) {
+                            this.province = prov;
+                            this.autoDetectZone();
+                            return;
+                        }
+                    }
+                }
+
+                // 2. Jika minimal 4 huruf dan cocok dengan awalan nama kota di salah satu provinsi
+                if (cleanCity.length >= 4) {
+                    for (const [prov, cities] of Object.entries(this.indonesiaRegions)) {
+                        for (const c of cities) {
+                            if (this.normRegion(c).startsWith(cleanCity)) {
+                                this.province = prov;
+                                this.autoDetectZone();
+                                return;
+                            }
+                        }
+                    }
+                }
+            }
+
+            this.autoDetectZone();
+        },
+
         autoDetectZone() {
-            const c = (this.city || '').toLowerCase().trim();
-            const d = (this.district || '').toLowerCase().trim();
-            const a = (this.address || '').toLowerCase().trim();
-            const p = (this.province || '').toLowerCase().trim();
+            const cleanCity = this.normRegion(this.city);
+            const cleanDist = this.normRegion(this.district);
+            const cleanProv = (this.province || '').toLowerCase().trim();
 
-            const cityDist = (c + ' ' + d).trim();
-            const fullText = (c + ' ' + d + ' ' + a).trim();
-
-            // 1. Cek kecocokan dari Kota / Kabupaten & Kecamatan terlebih dahulu
-            if (cityDist) {
+            // 1. Cek kecocokan spesifik Kabupaten/Kota pada daftar kota tiap zona (Urutan 1: Lamongan, Urutan 2: Sekitar Lamongan, dst)
+            if (cleanCity.length >= 3) {
                 for (const z of this.zones) {
                     for (const mc of (z.cities || [])) {
-                        if (mc && (cityDist.includes(mc) || (c && mc.includes(c)))) {
+                        const cleanMc = this.normRegion(mc);
+                        if (cleanMc && (cleanCity === cleanMc || cleanCity.split(/[\s,/-]+/).includes(cleanMc))) {
                             this.selectedZoneId = z.id;
                             return;
                         }
@@ -96,35 +140,30 @@
                 }
             }
 
-            // 2. Cek kecocokan kata kunci kota/kecamatan di dalam Alamat Lengkap
-            if (fullText) {
-                for (const z of this.zones) {
-                    for (const mc of (z.cities || [])) {
-                        if (mc && mc.length >= 4 && fullText.includes(mc)) {
-                            this.selectedZoneId = z.id;
-                            return;
-                        }
-                    }
+            // 2. Cek apakah Kecamatan adalah salah satu dari 27 Kecamatan di Kab. Lamongan
+            if (cleanDist.length >= 3 && (!cleanProv || cleanProv.includes('jawa timur'))) {
+                const isLamonganDist = this.lamonganDistricts.some(d => d.toLowerCase() === cleanDist);
+                if (isLamonganDist && this.zones.length > 0) {
+                    this.selectedZoneId = this.zones[0].id;
+                    return;
                 }
             }
 
-            // 3. Cek kecocokan dari Provinsi
-            if (p) {
+            // 3. Cek kecocokan Provinsi (seluruh 38 Provinsi Indonesia)
+            if (cleanProv) {
                 for (const z of this.zones) {
                     for (const mp of (z.provinces || [])) {
-                        if (mp && (p.includes(mp) || mp.includes(p))) {
+                        const cleanMp = (mp || '').toLowerCase().trim();
+                        if (cleanMp && cleanProv === cleanMp) {
                             this.selectedZoneId = z.id;
                             return;
                         }
                     }
                 }
-            }
-
-            // 4. Cek kecocokan nama provinsi di dalam Alamat Lengkap
-            if (fullText) {
                 for (const z of this.zones) {
                     for (const mp of (z.provinces || [])) {
-                        if (mp && mp.length >= 4 && fullText.includes(mp)) {
+                        const cleanMp = (mp || '').toLowerCase().trim();
+                        if (cleanMp && (cleanProv.includes(cleanMp) || cleanMp.includes(cleanProv))) {
                             this.selectedZoneId = z.id;
                             return;
                         }
@@ -315,7 +354,23 @@
 
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
-                                <label class="block text-xs font-bold text-brand-text uppercase mb-1">Kota / Kabupaten Tujuan *</label>
+                                <label class="block text-xs font-bold text-brand-text uppercase mb-1">Provinsi Tujuan (38 Provinsi Indonesia) *</label>
+                                <select name="province"
+                                        x-model="province"
+                                        @change="onProvinceChange()"
+                                        required
+                                        class="w-full px-3.5 py-2.5 rounded-xl border border-brand-border text-xs sm:text-sm bg-white font-semibold">
+                                    @foreach($provinces ?? [] as $prov)
+                                        <option value="{{ $prov }}">{{ $prov }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <div>
+                                <div class="flex items-center justify-between mb-1">
+                                    <label class="block text-xs font-bold text-brand-text uppercase">Kota / Kabupaten Tujuan *</label>
+                                    <span class="text-[10px] text-brand-primary font-semibold" x-text="citiesInProvince.length + ' Kab/Kota di ' + province"></span>
+                                </div>
                                 <input type="text"
                                        name="city"
                                        list="popular-cities-list"
@@ -323,31 +378,23 @@
                                        @input="onCityChange()"
                                        @change="onCityChange()"
                                        required
-                                       placeholder="Contoh: Kab. Lamongan, Surabaya..."
+                                       placeholder="Ketik / Pilih Kab. atau Kota di seluruh Indonesia..."
                                        class="w-full px-3.5 py-2.5 rounded-xl border border-brand-border text-xs sm:text-sm bg-white font-semibold">
                                 <datalist id="popular-cities-list">
                                     @foreach($popularLocations as $loc)
-                                        <option value="{{ $loc['city'] }}">{{ $loc['province'] }} — {{ $loc['hint'] }}</option>
+                                        <option value="{{ $loc['city'] }}">Provinsi {{ $loc['province'] }}</option>
                                     @endforeach
                                 </datalist>
-                            </div>
-
-                            <div>
-                                <label class="block text-xs font-bold text-brand-text uppercase mb-1">Provinsi *</label>
-                                <input type="text"
-                                       name="province"
-                                       list="provinces-list"
-                                       x-model="province"
-                                       @input="autoDetectZone()"
-                                       @change="autoDetectZone()"
-                                       required
-                                       placeholder="Contoh: Jawa Timur"
-                                       class="w-full px-3.5 py-2.5 rounded-xl border border-brand-border text-xs sm:text-sm bg-white">
-                                <datalist id="provinces-list">
-                                    @foreach($provinces ?? [] as $prov)
-                                        <option value="{{ $prov }}"></option>
-                                    @endforeach
-                                </datalist>
+                                <!-- Pilihan Cepat Dropdown Kab/Kota sesuai Provinsi yang dipilih -->
+                                <div class="mt-1.5 flex items-center gap-1.5">
+                                    <span class="text-[10px] text-brand-textAlt shrink-0">Pilih dari Provinsi <strong x-text="province"></strong>:</span>
+                                    <select @change="if ($event.target.value) { city = $event.target.value; autoDetectZone(); }"
+                                            class="flex-1 px-2.5 py-1 rounded-lg border border-brand-border bg-brand-cream/40 text-[11px] font-semibold text-brand-text">
+                                        <template x-for="c in citiesInProvince" :key="c">
+                                            <option :value="c" :selected="c === city" x-text="c"></option>
+                                        </template>
+                                    </select>
+                                </div>
                             </div>
                         </div>
 
@@ -356,10 +403,16 @@
                                 <label class="block text-xs font-bold text-brand-text uppercase mb-1">Kecamatan</label>
                                 <input type="text"
                                        name="district"
+                                       list="lamongan-districts-list"
                                        x-model="district"
                                        @input="autoDetectZone()"
                                        placeholder="Contoh: Kec. Lamongan / Sukodadi / Babat"
                                        class="w-full px-3.5 py-2.5 rounded-xl border border-brand-border text-xs sm:text-sm bg-white">
+                                <datalist id="lamongan-districts-list">
+                                    @foreach($lamonganDistricts ?? [] as $dist)
+                                        <option value="Kec. {{ $dist }}">Kab. Lamongan, Jawa Timur</option>
+                                    @endforeach
+                                </datalist>
                             </div>
                             <div>
                                 <label class="block text-xs font-bold text-brand-text uppercase mb-1">Kode Pos</label>
