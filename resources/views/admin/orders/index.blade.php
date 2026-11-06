@@ -1,10 +1,32 @@
-@extends('layouts.admin')
-@section('title', 'Kelola Pesanan E-Commerce & Ongkir J&T')
-@section('header', 'Kelola Pesanan E-Commerce & Pengiriman J&T')
-@section('subheader', 'Pantau pembayaran masuk, kemas barang, input nomor resi J&T Express dari Lamongan, dan atur zona ongkir.')
-
-@section('content')
+<x-admin-layout>
 <div class="space-y-6" x-data="{ activeTab: '{{ $tab }}' }">
+
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+            <p class="text-[11px] font-mono uppercase tracking-widest text-[#9A6A52] font-bold mb-1">E-Commerce &amp; Ekspedisi J&amp;T Lamongan</p>
+            <h1 class="text-2xl font-serif font-bold text-slate-900">Kelola Pesanan, Resi J&amp;T &amp; Tarif Ongkir</h1>
+            <p class="text-xs text-slate-500">Pantau pembayaran masuk otomatis, kemas barang, input nomor resi J&amp;T Express dari Lamongan, dan atur zona ongkir.</p>
+        </div>
+    </div>
+
+    @if (session('success'))
+        <div class="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold flex items-center gap-2.5">
+            <span class="text-base">✅</span>
+            <span>{{ session('success') }}</span>
+        </div>
+    @endif
+
+    @if ($errors->any())
+        <div class="p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 text-xs space-y-1">
+            <p class="font-bold">⚠️ Terdapat kesalahan input:</p>
+            <ul class="list-disc list-inside">
+                @foreach ($errors->all() as $err)
+                    <li>{{ $err }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
 
     <!-- Navigasi Tab Utama -->
     <div class="bg-white rounded-3xl p-2 border border-slate-200 shadow-sm flex flex-wrap gap-2">
@@ -679,5 +701,5 @@
     </div>
 
 </div>
-@endsection
+</x-admin-layout>
 
