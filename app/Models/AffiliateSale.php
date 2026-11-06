@@ -9,6 +9,7 @@ class AffiliateSale extends Model
     protected $fillable = [
         'affiliate_id',
         'product_id',
+        'order_id',
         'order_code',
         'customer_name',
         'customer_phone',

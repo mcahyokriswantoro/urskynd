@@ -17,6 +17,8 @@ class Product extends Model
         'description',
         'image',
         'size',
+        'weight',
+        'stock',
         'price',
         'commission_rate',
         'badge',

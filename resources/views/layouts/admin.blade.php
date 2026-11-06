@@ -54,6 +54,25 @@
                     Manajemen Pengguna
                 </a>
 
+                @php
+                    $pendingOrderCount = \Illuminate\Support\Facades\Schema::hasTable('orders')
+                        ? \App\Models\Order::whereIn('status', ['pending_payment', 'paid', 'processing'])->count()
+                        : 0;
+                @endphp
+
+                <a href="{{ route('admin.orders.index') }}"
+                   class="flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium transition-colors {{ request()->routeIs('admin.orders.*') || request()->routeIs('admin.shipping-zones.*') ? 'bg-[#9A6A52] text-white font-semibold shadow-md shadow-[#9A6A52]/20' : 'text-slate-300 hover:bg-slate-800/80 hover:text-white' }}">
+                    <span class="flex items-center">
+                        <svg class="w-5 h-5 mr-3 {{ request()->routeIs('admin.orders.*') ? 'text-white' : 'text-[#E8B496]' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
+                        Pesanan &amp; Ongkir J&amp;T
+                    </span>
+                    @if($pendingOrderCount > 0)
+                        <span class="px-2 py-0.5 text-[10px] font-extrabold rounded-full bg-amber-400 text-slate-950">{{ $pendingOrderCount }}</span>
+                    @else
+                        <span class="px-1.5 py-0.5 text-[9px] font-bold rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">Toko</span>
+                    @endif
+                </a>
+
                 <a href="{{ route('admin.products.index') }}" 
                    class="flex items-center px-3.5 py-2.5 rounded-xl text-sm font-medium transition-colors {{ request()->routeIs('admin.products.*') ? 'bg-[#9A6A52] text-white font-semibold shadow-md shadow-[#9A6A52]/20' : 'text-slate-300 hover:bg-slate-800/80 hover:text-white' }}">
                     <svg class="w-5 h-5 mr-3 {{ request()->routeIs('admin.products.*') ? 'text-white' : 'text-[#E8B496]' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
@@ -232,7 +251,26 @@
 
                     <div class="space-y-1.5 text-xs">
                         <a href="{{ route('admin.dashboard') }}" @click="adminDrawerOpen = false" class="block px-3 py-2 rounded-lg bg-[#9A6A52] text-white font-medium">Dashboard Overview</a>
-                        <a href="{{ route('admin.products.index') }}" @click="adminDrawerOpen = false" class="block px-3 py-2 rounded-lg hover:bg-slate-800 text-slate-300">Kelola Produk</a>
+                        @php
+                    $pendingOrderCount = \Illuminate\Support\Facades\Schema::hasTable('orders')
+                        ? \App\Models\Order::whereIn('status', ['pending_payment', 'paid', 'processing'])->count()
+                        : 0;
+                @endphp
+
+                <a href="{{ route('admin.orders.index') }}"
+                   class="flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium transition-colors {{ request()->routeIs('admin.orders.*') || request()->routeIs('admin.shipping-zones.*') ? 'bg-[#9A6A52] text-white font-semibold shadow-md shadow-[#9A6A52]/20' : 'text-slate-300 hover:bg-slate-800/80 hover:text-white' }}">
+                    <span class="flex items-center">
+                        <svg class="w-5 h-5 mr-3 {{ request()->routeIs('admin.orders.*') ? 'text-white' : 'text-[#E8B496]' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
+                        Pesanan &amp; Ongkir J&amp;T
+                    </span>
+                    @if($pendingOrderCount > 0)
+                        <span class="px-2 py-0.5 text-[10px] font-extrabold rounded-full bg-amber-400 text-slate-950">{{ $pendingOrderCount }}</span>
+                    @else
+                        <span class="px-1.5 py-0.5 text-[9px] font-bold rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">Toko</span>
+                    @endif
+                </a>
+
+                <a href="{{ route('admin.products.index') }}" @click="adminDrawerOpen = false" class="block px-3 py-2 rounded-lg hover:bg-slate-800 text-slate-300">Kelola Produk</a>
                         <a href="{{ route('admin.articles.index') }}" @click="adminDrawerOpen = false" class="block px-3 py-2 rounded-lg hover:bg-slate-800 text-slate-300">Kelola Berita</a>
                         <a href="{{ route('admin.pembelian.edit') }}" @click="adminDrawerOpen = false" class="block px-3 py-2 rounded-lg hover:bg-slate-800 text-slate-300">Halaman Pembelian</a>
                         <a href="{{ route('admin.affiliates.index') }}" @click="adminDrawerOpen = false" class="block px-3 py-2 rounded-lg hover:bg-slate-800 text-slate-300">Mitra &amp; Komisi Afiliasi</a>

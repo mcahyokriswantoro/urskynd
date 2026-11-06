@@ -38,6 +38,9 @@ Route::get('/berita/{slug}', [\App\Http\Controllers\NewsController::class, 'show
 Route::get('/kontak', [\App\Http\Controllers\ContactController::class, 'index'])->name('contact.index');
 Route::post('/kontak', [\App\Http\Controllers\ContactController::class, 'store'])->name('contact.store');
 
+// Payment Gateway Automatic Webhook (Midtrans / Xendit)
+Route::post('/payment/webhook', [\App\Http\Controllers\OrderController::class, 'paymentWebhook'])->name('payment.webhook');
+
 // Authenticated User Dashboard
 Route::get('/dashboard', \App\Http\Controllers\DashboardController::class)
     ->middleware(['auth', 'verified', 'onboarding'])
@@ -80,6 +83,19 @@ Route::middleware('auth')->group(function () {
     Route::post('/affiliate/sales', [\App\Http\Controllers\AffiliateController::class, 'recordSale'])->name('affiliate.sales.store');
     Route::post('/affiliate/withdraw', [\App\Http\Controllers\AffiliateController::class, 'requestWithdrawal'])->name('affiliate.withdraw');
 
+    // E-Commerce Cart, Checkout (J&T Lamongan), & Orders (Shopee-style)
+    Route::get('/cart', [\App\Http\Controllers\CartController::class, 'index'])->name('cart.index');
+    Route::post('/cart/add/{product}', [\App\Http\Controllers\CartController::class, 'add'])->name('cart.add');
+    Route::patch('/cart/items/{cartItem}', [\App\Http\Controllers\CartController::class, 'updateItem'])->name('cart.update');
+    Route::delete('/cart/items/{cartItem}', [\App\Http\Controllers\CartController::class, 'removeItem'])->name('cart.remove');
+    Route::post('/checkout', [\App\Http\Controllers\CartController::class, 'checkout'])->name('checkout.store');
+
+    Route::get('/orders', [\App\Http\Controllers\OrderController::class, 'index'])->name('orders.index');
+    Route::get('/orders/{order}', [\App\Http\Controllers\OrderController::class, 'show'])->name('orders.show');
+    Route::post('/orders/{order}/pay', [\App\Http\Controllers\OrderController::class, 'pay'])->name('orders.pay');
+    Route::post('/orders/{order}/received', [\App\Http\Controllers\OrderController::class, 'confirmReceived'])->name('orders.received');
+    Route::post('/orders/{order}/cancel', [\App\Http\Controllers\OrderController::class, 'cancel'])->name('orders.cancel');
+
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
@@ -113,6 +129,14 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::patch('/affiliates/withdrawals/{withdrawal}/status', [\App\Http\Controllers\AdminAffiliateController::class, 'updateWithdrawalStatus'])->name('affiliates.withdrawals.status');
     Route::patch('/affiliates/products/{product}/commission', [\App\Http\Controllers\AdminAffiliateController::class, 'updateProductCommission'])->name('affiliates.products.commission');
     Route::patch('/affiliates/{user}', [\App\Http\Controllers\AdminAffiliateController::class, 'updateAffiliate'])->name('affiliates.update');
+
+    // E-Commerce Orders, J&T Shipping Zones (Lamongan), & Payment Gateway Management
+    Route::get('/orders', [\App\Http\Controllers\AdminOrderController::class, 'index'])->name('orders.index');
+    Route::patch('/orders/{order}/status', [\App\Http\Controllers\AdminOrderController::class, 'updateStatus'])->name('orders.status');
+    Route::post('/shipping-zones', [\App\Http\Controllers\AdminOrderController::class, 'saveShippingZone'])->name('shipping-zones.store');
+    Route::put('/shipping-zones/{zone}', [\App\Http\Controllers\AdminOrderController::class, 'saveShippingZone'])->name('shipping-zones.update');
+    Route::delete('/shipping-zones/{zone}', [\App\Http\Controllers\AdminOrderController::class, 'deleteShippingZone'])->name('shipping-zones.destroy');
+    Route::put('/orders/gateway-settings', [\App\Http\Controllers\AdminOrderController::class, 'updateGatewaySettings'])->name('orders.gateway.update');
 });
 
 require __DIR__.'/auth.php';

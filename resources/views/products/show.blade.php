@@ -131,11 +131,66 @@
                         @endif
                     @endauth
 
-                    <!-- Primary Buy / Order Button (Tersedia untuk Tamu & Member) -->
-                    <button type="button" @click="checkoutModalOpen = true" class="w-full py-4 px-6 bg-brand-primary text-white font-bold rounded-2xl hover:bg-brand-primaryAlt transition-all shadow-soft flex items-center justify-center gap-2 text-sm cursor-pointer">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
-                        <span>Beli Sekarang ({{ $product->formatted_price }})</span>
-                    </button>
+                    <!-- Pilih Jumlah & Tombol Keranjang / Beli Sekarang (Gaya Shopee E-Commerce) -->
+                    <div class="p-3.5 rounded-2xl bg-brand-cream/40 border border-brand-border/70 flex items-center justify-between">
+                        <div>
+                            <span class="text-xs font-bold text-brand-text block">Jumlah Pembelian</span>
+                            <span class="text-[11px] text-brand-textAlt">Pengiriman J&amp;T Express dari Gudang Lamongan ({{ $product->weight ?? 200 }}g / pcs)</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button type="button" @click="qty = Math.max(1, qty - 1)" class="w-8 h-8 rounded-xl bg-white border border-brand-border font-bold text-sm hover:bg-brand-cream cursor-pointer">-</button>
+                            <span class="w-8 text-center text-sm font-extrabold text-brand-text" x-text="qty">1</span>
+                            <button type="button" @click="qty++" class="w-8 h-8 rounded-xl bg-white border border-brand-border font-bold text-sm hover:bg-brand-cream cursor-pointer">+</button>
+                        </div>
+                    </div>
+
+                    @auth
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <!-- Tombol Masukkan Keranjang -->
+                            <form action="{{ route('cart.add', $product) }}" method="POST">
+                                @csrf
+                                <input type="hidden" name="quantity" :value="qty">
+                                <input type="hidden" name="buy_now" value="0">
+                                <button type="submit" class="w-full py-3.5 px-4 bg-white border-2 border-brand-primary text-brand-primary font-bold rounded-2xl hover:bg-brand-primary/5 transition-all flex items-center justify-center gap-2 text-xs sm:text-sm cursor-pointer">
+                                    <span>🛒</span>
+                                    <span>+ Masukkan Keranjang</span>
+                                </button>
+                            </form>
+
+                            <!-- Tombol Beli Sekarang (Langsung ke Checkout E-Commerce + Ongkir J&T) -->
+                            <form action="{{ route('cart.add', $product) }}" method="POST">
+                                @csrf
+                                <input type="hidden" name="quantity" :value="qty">
+                                <input type="hidden" name="buy_now" value="1">
+                                <button type="submit" class="w-full py-3.5 px-4 bg-brand-primary text-white font-bold rounded-2xl hover:bg-brand-primaryAlt transition-all shadow-soft flex items-center justify-center gap-2 text-xs sm:text-sm cursor-pointer">
+                                    <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
+                                    <span>Beli Sekarang (<span x-text="formatRp(unitPrice * qty)">{{ $product->formatted_price }}</span>)</span>
+                                </button>
+                            </form>
+                        </div>
+                    @else
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <button type="button"
+                                    @click="$dispatch('open-auth-modal', {
+                                        title: 'Masuk untuk Tambah ke Keranjang',
+                                        description: 'Silakan masuk atau daftar akun terlebih dahulu agar keranjang belanja dan status pengiriman J&T Anda tersimpan di menu Pesanan Saya.'
+                                    })"
+                                    class="w-full py-3.5 px-4 bg-white border-2 border-brand-primary text-brand-primary font-bold rounded-2xl hover:bg-brand-primary/5 transition-all flex items-center justify-center gap-2 text-xs sm:text-sm cursor-pointer">
+                                <span>🛒</span>
+                                <span>+ Masukkan Keranjang</span>
+                            </button>
+
+                            <button type="button"
+                                    @click="$dispatch('open-auth-modal', {
+                                        title: 'Masuk untuk Checkout Produk',
+                                        description: 'Silakan masuk atau daftar akun terlebih dahulu untuk melanjutkan checkout {{ addslashes($product->name) }} dengan perhitungan Ongkir J&T & Payment Gateway Otomatis.'
+                                    })"
+                                    class="w-full py-3.5 px-4 bg-brand-primary text-white font-bold rounded-2xl hover:bg-brand-primaryAlt transition-all shadow-soft flex items-center justify-center gap-2 text-xs sm:text-sm cursor-pointer">
+                                <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
+                                <span>Beli Sekarang (<span x-text="formatRp(unitPrice * qty)">{{ $product->formatted_price }}</span>)</span>
+                            </button>
+                        </div>
+                    @endauth
 
                     <!-- Share & Routine Actions -->
                     <div class="grid grid-cols-2 gap-3">

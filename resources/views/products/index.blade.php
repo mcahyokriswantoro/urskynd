@@ -109,9 +109,25 @@
                                         Detail
                                     </a>
 
-                                    <a href="{{ route('products.show', ['product' => $product, 'checkout' => 1]) }}" class="px-4 py-2 bg-brand-primary text-white rounded-xl text-xs font-bold hover:bg-brand-primaryAlt transition-all shadow-xs">
-                                        Beli Sekarang
-                                    </a>
+                                    @auth
+                                        <form action="{{ route('cart.add', $product) }}" method="POST" class="inline">
+                                            @csrf
+                                            <input type="hidden" name="quantity" value="1">
+                                            <input type="hidden" name="buy_now" value="1">
+                                            <button type="submit" class="px-4 py-2 bg-brand-primary text-white rounded-xl text-xs font-bold hover:bg-brand-primaryAlt transition-all shadow-xs cursor-pointer">
+                                                Beli Sekarang
+                                            </button>
+                                        </form>
+                                    @else
+                                        <button type="button"
+                                                @click="$dispatch('open-auth-modal', {
+                                                    title: 'Masuk untuk Checkout Produk',
+                                                    description: 'Silakan masuk atau daftar akun terlebih dahulu untuk melanjutkan pemesanan {{ addslashes($product->name) }} ({{ $product->formatted_price }}).'
+                                                })"
+                                                class="px-4 py-2 bg-brand-primary text-white rounded-xl text-xs font-bold hover:bg-brand-primaryAlt transition-all shadow-xs cursor-pointer">
+                                            Beli Sekarang
+                                        </button>
+                                    @endauth
                                 </div>
                             </div>
                         </div>

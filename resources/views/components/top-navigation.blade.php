@@ -5,7 +5,29 @@
             <!-- Search could go here -->
         </div>
 
-        <div class="flex items-center gap-6">
+        <div class="flex items-center gap-4">
+            @php
+                $topCartCount = auth()->check() && \Illuminate\Support\Facades\Schema::hasTable('cart_items')
+                    ? \App\Models\CartItem::where('user_id', auth()->id())->sum('quantity')
+                    : 0;
+            @endphp
+
+            <!-- Shopping Cart Shortcut -->
+            <a href="{{ route('cart.index') }}" class="relative p-2 text-brand-textAlt hover:text-brand-primary transition-colors rounded-xl hover:bg-brand-cream/50" title="Keranjang Belanja">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                </svg>
+                @if($topCartCount > 0)
+                    <span class="absolute -top-1 -right-1 px-1.5 py-0.5 bg-brand-primary text-white text-[10px] font-extrabold rounded-full leading-none">{{ $topCartCount }}</span>
+                @endif
+            </a>
+
+            <!-- My Orders Shortcut -->
+            <a href="{{ route('orders.index') }}" class="hidden lg:inline-flex items-center gap-1.5 px-3 py-1.5 bg-brand-cream/70 border border-brand-border/60 rounded-full text-xs font-bold text-brand-text hover:text-brand-primary transition-colors">
+                <span>📦</span>
+                <span>Pesanan Saya</span>
+            </a>
+
             <!-- Points / Rewards -->
             <a href="{{ route('rewards.index') }}" class="flex items-center gap-2 px-3 py-1.5 bg-brand-cream rounded-full hover:bg-brand-cream/80 transition-colors">
                 <svg class="w-4 h-4 text-brand-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
@@ -110,6 +132,14 @@
                     </div>
 
                     <div class="py-1">
+                        <a href="{{ route('orders.index') }}" class="flex items-center gap-2.5 px-4 py-2 text-sm text-brand-text hover:bg-brand-cream/60 hover:text-brand-primary transition-colors font-semibold">
+                            <span>📦</span>
+                            Pesanan Saya (Lacak J&amp;T)
+                        </a>
+                        <a href="{{ route('cart.index') }}" class="flex items-center gap-2.5 px-4 py-2 text-sm text-brand-text hover:bg-brand-cream/60 hover:text-brand-primary transition-colors">
+                            <span>🛒</span>
+                            Keranjang Belanja ({{ $topCartCount }})
+                        </a>
                         <a href="{{ route('profile.edit') }}" class="flex items-center gap-2.5 px-4 py-2 text-sm text-brand-text hover:bg-brand-cream/60 hover:text-brand-primary transition-colors">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
                             Pengaturan Profil
@@ -300,6 +330,23 @@
                 <a href="{{ route('products.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors {{ request()->routeIs('products.*') ? 'bg-brand-primary/10 text-brand-primary font-bold' : 'text-brand-text hover:bg-brand-cream/60' }}">
                     <svg class="w-5 h-5 text-brand-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
                     <span>Katalog Produk</span>
+                </a>
+
+                <a href="{{ route('cart.index') }}" class="flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium transition-colors {{ request()->routeIs('cart.*') ? 'bg-brand-primary/10 text-brand-primary font-bold' : 'text-brand-text hover:bg-brand-cream/60' }}">
+                    <span class="flex items-center gap-3">
+                        <span class="text-base">🛒</span>
+                        <span>Keranjang Belanja</span>
+                    </span>
+                    @if($topCartCount > 0)
+                        <span class="px-2 py-0.5 text-[10px] font-extrabold rounded-full bg-brand-primary text-white">{{ $topCartCount }}</span>
+                    @endif
+                </a>
+
+                <a href="{{ route('orders.index') }}" class="flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium transition-colors {{ request()->routeIs('orders.*') ? 'bg-brand-primary/10 text-brand-primary font-bold' : 'text-brand-text hover:bg-brand-cream/60' }}">
+                    <span class="flex items-center gap-3">
+                        <span class="text-base">📦</span>
+                        <span>Pesanan Saya (J&amp;T)</span>
+                    </span>
                 </a>
 
                 <a href="{{ route('rewards.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors {{ request()->routeIs('rewards.*') ? 'bg-brand-primary/10 text-brand-primary font-bold' : 'text-brand-text hover:bg-brand-cream/60' }}">

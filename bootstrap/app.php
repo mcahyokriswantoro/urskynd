@@ -15,6 +15,10 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\TrackAffiliateReferral::class,
         ]);
 
+        $middleware->validateCsrfTokens(except: [
+            'payment/webhook',
+        ]);
+
         $middleware->alias([
             'admin' => \App\Http\Middleware\AdminMiddleware::class,
             'onboarding' => \App\Http\Middleware\EnsureOnboardingCompleted::class,
