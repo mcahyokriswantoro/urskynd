@@ -23,13 +23,17 @@
 @endphp
 
 <x-app-layout>
-    <div class="space-y-6" x-init="autoDetectZone()" x-data="{
+    <div class="space-y-6" x-init="autoDetectZone(); fetchRemoteDistrictsIfNeeded();" x-data="{
         subtotal: @js($subtotal),
         totalWeight: @js($totalWeight),
         totalKg: @js($totalKg),
         zones: @js($zonesPayload),
         indonesiaRegions: @js($indonesiaRegions ?? []),
         lamonganDistricts: @js($lamonganDistricts ?? []),
+        districtsByCity: @js($districtsByCity ?? []),
+        remoteDistricts: {},
+        wilayahProvincesCache: null,
+        wilayahRegenciesCache: {},
         popularLocations: @js($popularLocations),
         selectedZoneId: @js(old('shipping_zone_id', $defaultZone?->id)),
         province: @js(old('province', 'Jawa Timur')),
@@ -44,6 +48,34 @@
 
         get citiesInProvince() {
             return this.indonesiaRegions[this.province] || [];
+        },
+
+        get districtsInCity() {
+            const raw = (this.city || '').trim();
+            if (!raw) return [];
+            if (this.districtsByCity[raw]) return this.districtsByCity[raw];
+            if (this.remoteDistricts[raw]) return this.remoteDistricts[raw];
+
+            const cleanTarget = this.normRegion(raw);
+            for (const [k, list] of Object.entries(this.districtsByCity)) {
+                if (this.normRegion(k) === cleanTarget) {
+                    return list;
+                }
+            }
+            for (const [k, list] of Object.entries(this.remoteDistricts)) {
+                if (this.normRegion(k) === cleanTarget) {
+                    return list;
+                }
+            }
+            return [];
+        },
+
+        get districtPlaceholder() {
+            const list = this.districtsInCity;
+            if (list && list.length > 0) {
+                return 'Contoh: Kec. ' + list.slice(0, 3).join(' / ');
+            }
+            return 'Ketik nama Kecamatan di ' + (this.city || 'Kabupaten/Kota tujuan');
         },
 
         get rawShippingCost() {
@@ -77,6 +109,64 @@
                 .trim();
         },
 
+        syncDistrictForCity() {
+            const list = this.districtsInCity;
+            if (this.district && list.length > 0) {
+                const cur = this.normRegion(this.district);
+                const valid = list.some(d => this.normRegion(d) === cur);
+                if (!valid) {
+                    this.district = '';
+                }
+            } else if (this.district && list.length === 0) {
+                this.district = '';
+            }
+            this.fetchRemoteDistrictsIfNeeded();
+        },
+
+        async fetchRemoteDistrictsIfNeeded() {
+            const rawCity = (this.city || '').trim();
+            if (!rawCity || this.districtsInCity.length > 0) return;
+
+            try {
+                if (!this.wilayahProvincesCache) {
+                    const resProv = await fetch('https://www.emsifa.com/api-wilayah-indonesia/api/provinces.json');
+                    if (!resProv.ok) return;
+                    this.wilayahProvincesCache = await resProv.json();
+                }
+
+                const cleanProv = (this.province || '').toLowerCase().trim();
+                const provObj = this.wilayahProvincesCache.find(p =>
+                    p.name.toLowerCase() === cleanProv ||
+                    p.name.toLowerCase().includes(cleanProv) ||
+                    cleanProv.includes(p.name.toLowerCase())
+                );
+                if (!provObj) return;
+
+                if (!this.wilayahRegenciesCache[provObj.id]) {
+                    const resReg = await fetch(`https://www.emsifa.com/api-wilayah-indonesia/api/regencies/${provObj.id}.json`);
+                    if (!resReg.ok) return;
+                    this.wilayahRegenciesCache[provObj.id] = await resReg.json();
+                }
+
+                const cleanCity = this.normRegion(rawCity);
+                const regObj = this.wilayahRegenciesCache[provObj.id].find(r =>
+                    this.normRegion(r.name) === cleanCity || r.name.toLowerCase().includes(cleanCity)
+                );
+                if (!regObj) return;
+
+                const resDist = await fetch(`https://www.emsifa.com/api-wilayah-indonesia/api/districts/${regObj.id}.json`);
+                if (!resDist.ok) return;
+                const distData = await resDist.json();
+                if (Array.isArray(distData) && distData.length > 0) {
+                    this.remoteDistricts[rawCity] = distData.map(d =>
+                        d.name.toLowerCase().replace(/\b\w/g, c => c.toUpperCase())
+                    );
+                }
+            } catch (e) {
+                // Offline fallback tetap berjalan normal
+            }
+        },
+
         onProvinceChange() {
             const provCities = this.indonesiaRegions[this.province] || [];
             if (provCities.length > 0) {
@@ -86,6 +176,7 @@
                     this.city = provCities[0];
                 }
             }
+            this.syncDistrictForCity();
             this.autoDetectZone();
         },
 
@@ -99,6 +190,7 @@
                     for (const c of cities) {
                         if (c.toLowerCase() === rawCity.toLowerCase() || this.normRegion(c) === cleanCity) {
                             this.province = prov;
+                            this.syncDistrictForCity();
                             this.autoDetectZone();
                             return;
                         }
@@ -111,6 +203,7 @@
                         for (const c of cities) {
                             if (this.normRegion(c).startsWith(cleanCity)) {
                                 this.province = prov;
+                                this.syncDistrictForCity();
                                 this.autoDetectZone();
                                 return;
                             }
@@ -119,6 +212,7 @@
                 }
             }
 
+            this.syncDistrictForCity();
             this.autoDetectZone();
         },
 
@@ -141,7 +235,7 @@
             }
 
             // 2. Cek apakah Kecamatan adalah salah satu dari 27 Kecamatan di Kab. Lamongan
-            if (cleanDist.length >= 3 && (!cleanProv || cleanProv.includes('jawa timur'))) {
+            if (cleanDist.length >= 3 && (!cleanProv || cleanProv.includes('jawa timur')) && cleanCity === 'lamongan') {
                 const isLamonganDist = this.lamonganDistricts.some(d => d.toLowerCase() === cleanDist);
                 if (isLamonganDist && this.zones.length > 0) {
                     this.selectedZoneId = this.zones[0].id;
@@ -178,6 +272,7 @@
         pickQuickLocation(loc) {
             this.city = loc.city;
             this.province = loc.province;
+            this.syncDistrictForCity();
             this.autoDetectZone();
         }
     }">
@@ -388,7 +483,7 @@
                                 <!-- Pilihan Cepat Dropdown Kab/Kota sesuai Provinsi yang dipilih -->
                                 <div class="mt-1.5 flex items-center gap-1.5">
                                     <span class="text-[10px] text-brand-textAlt shrink-0">Pilih dari Provinsi <strong x-text="province"></strong>:</span>
-                                    <select @change="if ($event.target.value) { city = $event.target.value; autoDetectZone(); }"
+                                    <select @change="if ($event.target.value) { city = $event.target.value; syncDistrictForCity(); autoDetectZone(); }"
                                             class="flex-1 px-2.5 py-1 rounded-lg border border-brand-border bg-brand-cream/40 text-[11px] font-semibold text-brand-text">
                                         <template x-for="c in citiesInProvince" :key="c">
                                             <option :value="c" :selected="c === city" x-text="c"></option>
@@ -400,19 +495,36 @@
 
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
-                                <label class="block text-xs font-bold text-brand-text uppercase mb-1">Kecamatan</label>
+                                <div class="flex items-center justify-between mb-1">
+                                    <label class="block text-xs font-bold text-brand-text uppercase">Kecamatan (Sesuai Kab/Kota) *</label>
+                                    <span class="text-[10px] text-brand-primary font-semibold"
+                                          x-show="districtsInCity.length > 0"
+                                          x-text="districtsInCity.length + ' Kecamatan di ' + city"></span>
+                                </div>
                                 <input type="text"
                                        name="district"
-                                       list="lamongan-districts-list"
+                                       list="city-districts-list"
                                        x-model="district"
                                        @input="autoDetectZone()"
-                                       placeholder="Contoh: Kec. Lamongan / Sukodadi / Babat"
-                                       class="w-full px-3.5 py-2.5 rounded-xl border border-brand-border text-xs sm:text-sm bg-white">
-                                <datalist id="lamongan-districts-list">
-                                    @foreach($lamonganDistricts ?? [] as $dist)
-                                        <option value="Kec. {{ $dist }}">Kab. Lamongan, Jawa Timur</option>
-                                    @endforeach
+                                       required
+                                       :placeholder="districtPlaceholder"
+                                       class="w-full px-3.5 py-2.5 rounded-xl border border-brand-border text-xs sm:text-sm bg-white font-semibold">
+                                <datalist id="city-districts-list">
+                                    <template x-for="dist in districtsInCity" :key="dist">
+                                        <option :value="'Kec. ' + dist" x-text="city + ', ' + province"></option>
+                                    </template>
                                 </datalist>
+                                <!-- Pilihan Cepat Dropdown Kecamatan sesuai Kabupaten/Kota yang dipilih -->
+                                <div class="mt-1.5 flex items-center gap-1.5" x-show="districtsInCity.length > 0">
+                                    <span class="text-[10px] text-brand-textAlt shrink-0">Pilih Kecamatan di <strong x-text="city"></strong>:</span>
+                                    <select @change="if ($event.target.value) { district = $event.target.value; autoDetectZone(); }"
+                                            class="flex-1 px-2.5 py-1 rounded-lg border border-brand-border bg-brand-cream/40 text-[11px] font-semibold text-brand-text">
+                                        <option value="">-- Pilih Kecamatan --</option>
+                                        <template x-for="dist in districtsInCity" :key="dist">
+                                            <option :value="'Kec. ' + dist" :selected="district === ('Kec. ' + dist) || district === dist" x-text="'Kec. ' + dist"></option>
+                                        </template>
+                                    </select>
+                                </div>
                             </div>
                             <div>
                                 <label class="block text-xs font-bold text-brand-text uppercase mb-1">Kode Pos</label>

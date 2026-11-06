@@ -394,4 +394,179 @@ class ShippingRateService
         }
         return $list;
     }
+
+    /**
+     * Peta Kecamatan resmi berdasarkan Kabupaten / Kota yang dipilih pelanggan.
+     */
+    public static function districtsByCity(): array
+    {
+        return [
+            // JAWA TIMUR (Lengkap 38 Kab/Kota)
+            'Kab. Lamongan' => self::lamonganDistricts(),
+            'Kab. Gresik' => [
+                'Balongpanggang', 'Benjeng', 'Bungah', 'Cerme', 'Driyorejo', 'Duduksampeyan', 'Dukun', 'Gresik',
+                'Kebomas', 'Kedamean', 'Manyar', 'Menganti', 'Panceng', 'Sangkapura', 'Sidayu', 'Tambak', 'Ujungpangkah', 'Wringinanom',
+            ],
+            'Kota Surabaya' => [
+                'Asemrowo', 'Benowo', 'Bubutan', 'Bulak', 'Dukuh Pakis', 'Gayungan', 'Genteng', 'Gubeng',
+                'Gunung Anyar', 'Jambangan', 'Karang Pilang', 'Kenjeran', 'Krembangan', 'Lakarsantri', 'Mulyorejo', 'Pabean Cantian',
+                'Pakal', 'Rungkut', 'Sambikerep', 'Sawahan', 'Semampir', 'Simokerto', 'Sukolilo', 'Sukomanunggal',
+                'Tambaksari', 'Tandes', 'Tegalsari', 'Tenggilis Mejoyo', 'Wiyung', 'Wonocolo', 'Wonokromo',
+            ],
+            'Kab. Sidoarjo' => [
+                'Balongbendo', 'Buduran', 'Candi', 'Gedangan', 'Jabon', 'Krembung', 'Krian', 'Porong',
+                'Prambon', 'Sedati', 'Sidoarjo', 'Sukodono', 'Taman', 'Tanggulangin', 'Tarik', 'Tulangan', 'Waru', 'Wonoayu',
+            ],
+            'Kab. Tuban' => [
+                'Bancar', 'Bangilan', 'Grabagan', 'Jatirogo', 'Jenu', 'Kenduruan', 'Kerek', 'Merakurak',
+                'Montong', 'Palang', 'Parengan', 'Plumpang', 'Rengel', 'Semanding', 'Senori', 'Singgahan', 'Soko', 'Tambakboyo', 'Tuban', 'Widang',
+            ],
+            'Kab. Bojonegoro' => [
+                'Balen', 'Baureno', 'Bojonegoro', 'Bubulan', 'Dander', 'Gayam', 'Gondang', 'Kalitidu',
+                'Kanor', 'Kapas', 'Kasiman', 'Kedewan', 'Kedungadem', 'Kepohbaru', 'Malo', 'Margomulyo',
+                'Ngambon', 'Ngasem', 'Ngraho', 'Padangan', 'Purwosari', 'Sekar', 'Sugihwaras', 'Sukosewu', 'Sumberejo', 'Tambakrejo', 'Temayang', 'Trucuk',
+            ],
+            'Kab. Jombang' => [
+                'Bandarkedungmulyo', 'Bareng', 'Diwek', 'Gudo', 'Jogoroto', 'Jombang', 'Kabuh', 'Kesamben',
+                'Kudu', 'Megaluh', 'Mojoagung', 'Mojowarno', 'Ngoro', 'Ngusikan', 'Perak', 'Peterongan', 'Plandaan', 'Ploso', 'Sumobito', 'Tembelang', 'Wonosalam',
+            ],
+            'Kab. Mojokerto' => [
+                'Bangsal', 'Dawarblandong', 'Dlanggu', 'Gedeg', 'Gondang', 'Jatirejo', 'Jetis', 'Kemlagi',
+                'Kutorejo', 'Mojoanyar', 'Mojosari', 'Ngoro', 'Pacet', 'Pungging', 'Puri', 'Sooko', 'Trawas', 'Trowulan',
+            ],
+            'Kota Mojokerto' => ['Kranggan', 'Magersari', 'Prajurit Kulon'],
+            'Kab. Bangkalan' => [
+                'Arosbaya', 'Bangkalan', 'Blega', 'Burneh', 'Galis', 'Geger', 'Kamal', 'Klampis',
+                'Kokop', 'Konang', 'Kwanyar', 'Labang', 'Modung', 'Sepulu', 'Socah', 'Tanah Merah', 'Tanjung Bumi', 'Tragah',
+            ],
+            'Kab. Sampang' => [
+                'Banyuates', 'Camplong', 'Jrengik', 'Karangpenang', 'Kedungdung', 'Ketapang', 'Omben',
+                'Pangarengan', 'Robatal', 'Sampang', 'Sokobanah', 'Sreseh', 'Tambelangan', 'Torjun',
+            ],
+            'Kab. Pamekasan' => [
+                'Batu Marmar', 'Galis', 'Kadur', 'Larangan', 'Pademawu', 'Pakong', 'Palengaan',
+                'Pamekasan', 'Pasean', 'Pegantenan', 'Proppo', 'Tlanakan', 'Waru',
+            ],
+            'Kab. Sumenep' => [
+                'Ambunten', 'Arjasa', 'Batang Batang', 'Batuan', 'Batuputih', 'Bluto', 'Dasuk', 'Dungkek',
+                'Ganding', 'Gapura', 'Gayam', 'Giligenting', 'Guluk-Guluk', 'Kalianget', 'Kangayan', 'Kota Sumenep',
+                'Lenteng', 'Manding', 'Masalembu', 'Nonggunong', 'Pasongsongan', 'Pragaan', 'Raas', 'Rubaru', 'Sapeken', 'Saronggi', 'Talango',
+            ],
+            'Kota Malang' => ['Blimbing', 'Kedungkandang', 'Klojen', 'Lowokwaru', 'Sukun'],
+            'Kab. Malang' => [
+                'Ampelgading', 'Bantur', 'Bululawang', 'Dampit', 'Dau', 'Donomulyo', 'Gedangan', 'Gondanglegi',
+                'Jabung', 'Kalipare', 'Karangploso', 'Kasembon', 'Kepanjen', 'Kromengan', 'Lawang', 'Ngajum',
+                'Ngantang', 'Pagak', 'Pagelaran', 'Pakis', 'Pakisaji', 'Poncokusumo', 'Pujon', 'Singosari',
+                'Sumbermanjing Wetan', 'Sumberpucung', 'Tajinan', 'Tirtoyudo', 'Tumpang', 'Turen', 'Wagir', 'Wajak', 'Wonosari',
+            ],
+            'Kota Batu' => ['Batu', 'Bumiaji', 'Junrejo'],
+            'Kota Kediri' => ['Kota Kediri', 'Mojoroto', 'Pesantren'],
+            'Kab. Kediri' => [
+                'Badas', 'Banyakan', 'Gampengrejo', 'Grogol', 'Gurah', 'Kandangan', 'Kandat', 'Kayen Kidul',
+                'Kepung', 'Kras', 'Kunjang', 'Mojo', 'Ngadiluwih', 'Ngancar', 'Ngasem', 'Pagu',
+                'Papar', 'Pare', 'Plemahan', 'Plosoklaten', 'Puncu', 'Purwoasri', 'Ringinrejo', 'Semen', 'Tarokan', 'Wates',
+            ],
+            'Kab. Nganjuk' => [
+                'Bagor', 'Baron', 'Berbek', 'Gondang', 'Jatikalen', 'Kertosono', 'Lengkong', 'Loceret',
+                'Nganjuk', 'Ngetos', 'Ngluyu', 'Ngronggot', 'Pace', 'Patianrowo', 'Prambon', 'Rejoso', 'Sawahan', 'Sukomoro', 'Tanjunganom', 'Wilangan',
+            ],
+            'Kota Blitar' => ['Kepanjenkidul', 'Sananwetan', 'Sukorejo'],
+            'Kab. Blitar' => [
+                'Bakung', 'Binangun', 'Doko', 'Gandusari', 'Garum', 'Kademangan', 'Kanigoro', 'Kesamben',
+                'Nglegok', 'Panggungrejo', 'Ponggok', 'Sanankulon', 'Selopuro', 'Selorejo', 'Srengat', 'Sutojayan', 'Talun', 'Udanawu', 'Wates', 'Wlingi', 'Wonodadi', 'Wonotirto',
+            ],
+            'Kab. Tulungagung' => [
+                'Bandung', 'Besuki', 'Boyolangu', 'Campurdarat', 'Gondang', 'Kalidawir', 'Karangrejo', 'Kauman',
+                'Kedungwaru', 'Ngantru', 'Ngunut', 'Pagerwojo', 'Pakel', 'Pucanglaban', 'Rejotangan', 'Sendang', 'Sumbergempol', 'Tanggunggunung', 'Tulungagung',
+            ],
+            'Kab. Trenggalek' => [
+                'Bendungan', 'Dongko', 'Durenan', 'Gandusari', 'Kampak', 'Karangan', 'Munjungan',
+                'Panggul', 'Pogalan', 'Pule', 'Suruh', 'Trenggalek', 'Tugu', 'Watulimo',
+            ],
+            'Kota Madiun' => ['Kartoharjo', 'Manguharjo', 'Taman'],
+            'Kab. Madiun' => [
+                'Balerejo', 'Dagangan', 'Dolopo', 'Geger', 'Gemarang', 'Jiwan', 'Kare', 'Kebonsari',
+                'Madiun', 'Mejayan', 'Pilangkenceng', 'Saradan', 'Sawahan', 'Wonoasri', 'Wungu',
+            ],
+            'Kab. Magetan' => [
+                'Barat', 'Bendo', 'Karangrejo', 'Karas', 'Kartoharjo', 'Kawedanan', 'Lembeyan', 'Magetan',
+                'Maospati', 'Ngariboyo', 'Nguntoronadi', 'Panekan', 'Parang', 'Plaosan', 'Poncol', 'Sidorejo', 'Sukomoro', 'Takeran',
+            ],
+            'Kab. Ngawi' => [
+                'Bringin', 'Geneng', 'Gerih', 'Jogorogo', 'Karanganyar', 'Karangjati', 'Kasreman', 'Kedunggalar',
+                'Kendal', 'Kwadungan', 'Mantingan', 'Ngawi', 'Ngrambe', 'Padas', 'Pangkur', 'Paron', 'Pitu', 'Sine', 'Widodaren',
+            ],
+            'Kab. Ponorogo' => [
+                'Babadan', 'Badegan', 'Balong', 'Bungkal', 'Jambon', 'Jenangan', 'Jetis', 'Kauman',
+                'Mlarak', 'Ngebel', 'Ngrayun', 'Ponorogo', 'Pudak', 'Pulung', 'Sambit', 'Sampung', 'Sawoo', 'Siman', 'Slahung', 'Sooko', 'Sukorejo',
+            ],
+            'Kab. Pacitan' => [
+                'Arjosari', 'Bandar', 'Donorojo', 'Kebonagung', 'Nawangan', 'Ngadirojo', 'Pacitan', 'Pringkuku', 'Punung', 'Sudimoro', 'Tegalombo', 'Tulakan',
+            ],
+            'Kota Pasuruan' => ['Bugul Kidul', 'Gadingrejo', 'Panggungrejo', 'Purworejo'],
+            'Kab. Pasuruan' => [
+                'Bangil', 'Beji', 'Gempol', 'Gondangwetan', 'Grati', 'Kejayan', 'Kraton', 'Lekok',
+                'Lumbang', 'Nguling', 'Pandaan', 'Pasrepan', 'Pohjentrek', 'Prigen', 'Purwodadi', 'Purwosari', 'Puspo', 'Rejoso', 'Rembang', 'Sukorejo', 'Tosari', 'Tutur', 'Winongan', 'Wonorejo',
+            ],
+            'Kota Probolinggo' => ['Kademangan', 'Kanigaran', 'Kedopok', 'Mayangan', 'Wonoasih'],
+            'Kab. Probolinggo' => [
+                'Bantaran', 'Banyuanyar', 'Besuk', 'Dringu', 'Gading', 'Gending', 'Kotaanyar', 'Kraksaan',
+                'Krejengan', 'Krucil', 'Kuripan', 'Leces', 'Lumbang', 'Maron', 'Paiton', 'Pajarakan', 'Pakuniran', 'Sukapura', 'Sumber', 'Sumberasih', 'Tegalsiwalan', 'Tiris', 'Tongas', 'Wonomerto',
+            ],
+            'Kab. Lumajang' => [
+                'Candipuro', 'Gucialit', 'Jatiroto', 'Kedungjajang', 'Klakah', 'Kunir', 'Lumajang', 'Padang',
+                'Pasirian', 'Pasrujambe', 'Pronojiwo', 'Randuagung', 'Ranuyoso', 'Rowokangkung', 'Senduro', 'Sukodono', 'Sumbersuko', 'Tekung', 'Tempeh', 'Tempursari', 'Yosowilangun',
+            ],
+            'Kab. Jember' => [
+                'Ajung', 'Ambulu', 'Arjasa', 'Balung', 'Bangsalsari', 'Gumukmas', 'Jelbuk', 'Jenggawah',
+                'Jombang', 'Kalisat', 'Kaliwates', 'Kencong', 'Ledokombo', 'Mayang', 'Mumbulsari', 'Pakusari',
+                'Panti', 'Patrang', 'Puger', 'Rambipuji', 'Semboro', 'Silo', 'Sukorambi', 'Sukowono', 'Sumberbaru', 'Sumberjambe', 'Sumbersari', 'Tanggul', 'Tempurejo', 'Umbulsari', 'Wuluhan',
+            ],
+            'Kab. Bondowoso' => [
+                'Binakal', 'Bondowoso', 'Botolinggo', 'Cermee', 'Curahdami', 'Grujugan', 'Jambesari Darus Sholah',
+                'Klabang', 'Maesan', 'Pakem', 'Prajekan', 'Pujer', 'Sempol', 'Sukosari', 'Sumberwringin', 'Taman Krocok', 'Tamanan', 'Tapen', 'Tegalampel', 'Tenggarang', 'Tlogosari', 'Wringin', 'Wonosari',
+            ],
+            'Kab. Situbondo' => [
+                'Arjasa', 'Asembagus', 'Banyuglugur', 'Banyuputih', 'Besuki', 'Bungatan', 'Jangkar', 'Jatibanteng',
+                'Kapongan', 'Kendit', 'Mangaran', 'Mlandingan', 'Panarukan', 'Panji', 'Situbondo', 'Suboh', 'Sumbermalang',
+            ],
+            'Kab. Banyuwangi' => [
+                'Bangorejo', 'Banyuwangi', 'Blimbingsari', 'Cluring', 'Gambiran', 'Genteng', 'Giri', 'Glagah',
+                'Glenmore', 'Kabat', 'Kalibaru', 'Kalipuro', 'Licin', 'Muncar', 'Pesanggaran', 'Purwoharjo',
+                'Rogojampi', 'Sempu', 'Siliragung', 'Singojuruh', 'Songgon', 'Srono', 'Tegaldlimo', 'Tegalsari', 'Wongsorejo',
+            ],
+
+            // DKI JAKARTA, JAWA BARAT, BANTEN, JAWA TENGAH, DIY, BALI & KOTA UTAMA INDONESIA
+            'Jakarta Selatan' => ['Cilandak', 'Jagakarsa', 'Kebayoran Baru', 'Kebayoran Lama', 'Mampang Prapatan', 'Pancoran', 'Pasar Minggu', 'Pesanggrahan', 'Setiabudi', 'Tebet'],
+            'Jakarta Pusat' => ['Cempaka Putih', 'Gambir', 'Johar Baru', 'Kemayoran', 'Menteng', 'Sawah Besar', 'Senen', 'Tanah Abang'],
+            'Jakarta Barat' => ['Cengkareng', 'Grogol Petamburan', 'Kalideres', 'Kebon Jeruk', 'Kembangan', 'Palmerah', 'Taman Sari', 'Tambora'],
+            'Jakarta Timur' => ['Cakung', 'Cipayung', 'Ciracas', 'Duren Sawit', 'Jatinegara', 'Kramat Jati', 'Makasar', 'Matraman', 'Pasar Rebo', 'Pulo Gadung'],
+            'Jakarta Utara' => ['Cilincing', 'Kelapa Gading', 'Koja', 'Pademangan', 'Penjaringan', 'Tanjung Priok'],
+            'Kota Bandung' => ['Andir', 'Antapani', 'Arcamanik', 'Astanaanyar', 'Babakan Ciparay', 'Bandung Kidul', 'Bandung Kulon', 'Bandung Wetan', 'Batununggal', 'Bojongloa Kaler', 'Bojongloa Kidul', 'Buahbatu', 'Cibeunying Kaler', 'Cibeunying Kidul', 'Cibiru', 'Cicendo', 'Cidadap', 'Cinambo', 'Coblong', 'Gedebage', 'Kiaracondong', 'Lengkong', 'Mandalajati', 'Panyileukan', 'Rancasari', 'Regol', 'Sukajadi', 'Sukasari', 'Sumur Bandung', 'Ujungberung'],
+            'Kota Bekasi' => ['Bantar Gebang', 'Bekasi Barat', 'Bekasi Selatan', 'Bekasi Timur', 'Bekasi Utara', 'Jatiasih', 'Jatisampurna', 'Medan Satria', 'Mustika Jaya', 'Pondok Gede', 'Pondok Melati', 'Rawalumbu'],
+            'Kota Depok' => ['Beji', 'Bojongsari', 'Cilodong', 'Cimanggis', 'Cinere', 'Cipayung', 'Limo', 'Pancoran Mas', 'Sawangan', 'Sukmajaya', 'Tapos'],
+            'Kota Bogor' => ['Bogor Barat', 'Bogor Selatan', 'Bogor Tengah', 'Bogor Timur', 'Bogor Utara', 'Tanah Sareal'],
+            'Kota Tangerang' => ['Batuceper', 'Benda', 'Cibodas', 'Ciledug', 'Cipondoh', 'Jatiuwung', 'Karangtengah', 'Karawaci', 'Larangan', 'Neglasari', 'Periuk', 'Pinang', 'Tangerang'],
+            'Kota Tangerang Selatan' => ['Ciputat', 'Ciputat Timur', 'Pamulang', 'Pondok Aren', 'Serpong', 'Serpong Utara', 'Setu'],
+            'Kota Semarang' => ['Banyumanik', 'Candisari', 'Gajahmungkur', 'Gayamsari', 'Genuk', 'Gunungpati', 'Mijen', 'Ngaliyan', 'Pedurungan', 'Semarang Barat', 'Semarang Selatan', 'Semarang Tengah', 'Semarang Timur', 'Semarang Utara', 'Tembalang', 'Tugu'],
+            'Kota Surakarta' => ['Banjarsari', 'Jebres', 'Laweyan', 'Pasar Kliwon', 'Serengan'],
+            'Kota Yogyakarta' => ['Danurejan', 'Gedongtengen', 'Gondokusuman', 'Gondomanan', 'Jetis', 'Kotagede', 'Kraton', 'Mantrijeron', 'Mergangsan', 'Ngampilan', 'Pakualaman', 'Tegalrejo', 'Umbulharjo', 'Wirobrajan'],
+            'Kab. Sleman' => ['Berbah', 'Cangkringan', 'Depok', 'Gamping', 'Godean', 'Kalasan', 'Minggir', 'Mlati', 'Moyudan', 'Ngaglik', 'Ngemplak', 'Pakem', 'Prambanan', 'Seyegan', 'Sleman', 'Tempel', 'Turi'],
+            'Kab. Bantul' => ['Bambanglipuro', 'Banguntapan', 'Bantul', 'Dlingo', 'Imogiri', 'Jetis', 'Kasihan', 'Kretek', 'Pajangan', 'Pandak', 'Piyungan', 'Pleret', 'Pundong', 'Sanden', 'Sedayu', 'Sewon', 'Srandakan'],
+            'Kota Denpasar' => ['Denpasar Barat', 'Denpasar Selatan', 'Denpasar Timur', 'Denpasar Utara'],
+            'Kab. Badung' => ['Abiansemal', 'Kuta', 'Kuta Selatan', 'Kuta Utara', 'Mengwi', 'Petang'],
+            'Kota Medan' => ['Medan Amplas', 'Medan Area', 'Medan Barat', 'Medan Baru', 'Medan Belawan', 'Medan Deli', 'Medan Denai', 'Medan Helvetia', 'Medan Johor', 'Medan Kota', 'Medan Labuhan', 'Medan Maimun', 'Medan Marelan', 'Medan Perjuangan', 'Medan Petisah', 'Medan Polonia', 'Medan Selayang', 'Medan Sunggal', 'Medan Tembung', 'Medan Timur', 'Medan Tuntungan'],
+            'Kota Palembang' => ['Alang-Alang Lebar', 'Bukit Kecil', 'Gandus', 'Ilir Barat I', 'Ilir Barat II', 'Ilir Timur I', 'Ilir Timur II', 'Ilir Timur Tiga', 'Jakabaring', 'Kalidoni', 'Kemuning', 'Kertapati', 'Plaju', 'Sako', 'Seberang Ulu I', 'Seberang Ulu II', 'Sematang Borang', 'Sukarami'],
+            'Kota Balikpapan' => ['Balikpapan Barat', 'Balikpapan Kota', 'Balikpapan Selatan', 'Balikpapan Tengah', 'Balikpapan Timur', 'Balikpapan Utara'],
+            'Kota Samarinda' => ['Loa Janan Ilir', 'Palaran', 'Samarinda Ilir', 'Samarinda Kota', 'Samarinda Seberang', 'Samarinda Ulu', 'Samarinda Utara', 'Sambutan', 'Sungai Kunjang', 'Sungai Pinang'],
+            'Kota Banjarmasin' => ['Banjarmasin Barat', 'Banjarmasin Selatan', 'Banjarmasin Tengah', 'Banjarmasin Timur', 'Banjarmasin Utara'],
+            'Kota Pontianak' => ['Pontianak Barat', 'Pontianak Kota', 'Pontianak Selatan', 'Pontianak Tenggara', 'Pontianak Timur', 'Pontianak Utara'],
+            'Kota Makassar' => ['Biringkanaya', 'Bontoala', 'Kepulauan Sangkarrang', 'Makassar', 'Mamajang', 'Manggala', 'Mariso', 'Panakkukang', 'Rappocini', 'Tallo', 'Tamalanrea', 'Tamalate', 'Ujung Pandang', 'Ujung Tanah', 'Wajo'],
+            'Kota Manado' => ['Bunaken', 'Bunaken Kepulauan', 'Malalayang', 'Mapanget', 'Paal Dua', 'Sario', 'Singkil', 'Tikala', 'Tuminting', 'Wanea', 'Wenang'],
+            'Kota Mataram' => ['Ampenan', 'Cakranegara', 'Mataram', 'Sandubaya', 'Sekarbela', 'Selaparang'],
+            'Kota Kupang' => ['Alak', 'Kelapa Lima', 'Kota Lama', 'Kota Raja', 'Maulafa', 'Oebobo'],
+            'Kota Ambon' => ['Baguala', 'Leitimur Selatan', 'Nusaniwe', 'Sirimau', 'Teluk Ambon'],
+            'Kota Jayapura' => ['Abepura', 'Heram', 'Jayapura Selatan', 'Jayapura Utara', 'Muara Tami'],
+        ];
+    }
 }
