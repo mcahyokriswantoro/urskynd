@@ -23,14 +23,17 @@
 @endphp
 
 <x-app-layout>
-    <div class="space-y-6" x-data="{
+    <div class="space-y-6" x-init="autoDetectZone()" x-data="{
         subtotal: @js($subtotal),
         totalWeight: @js($totalWeight),
         totalKg: @js($totalKg),
         zones: @js($zonesPayload),
+        popularLocations: @js($popularLocations),
         selectedZoneId: @js(old('shipping_zone_id', $defaultZone?->id)),
         province: @js(old('province', 'Jawa Timur')),
         city: @js(old('city', 'Kab. Lamongan')),
+        district: @js(old('district', '')),
+        address: @js(old('address', $user->address ?? '')),
         paymentChannel: @js(old('payment_channel', 'QRIS Otomatis (All Bank & E-Wallet)')),
 
         get activeZone() {
@@ -61,14 +64,31 @@
             return 'Rp ' + Number(n || 0).toLocaleString('id-ID');
         },
 
+        onCityChange() {
+            const c = (this.city || '').toLowerCase().trim();
+            if (c) {
+                const foundLoc = this.popularLocations.find(loc => loc.city.toLowerCase() === c || loc.city.toLowerCase().includes(c));
+                if (foundLoc && foundLoc.province) {
+                    this.province = foundLoc.province;
+                }
+            }
+            this.autoDetectZone();
+        },
+
         autoDetectZone() {
             const c = (this.city || '').toLowerCase().trim();
+            const d = (this.district || '').toLowerCase().trim();
+            const a = (this.address || '').toLowerCase().trim();
             const p = (this.province || '').toLowerCase().trim();
 
-            if (c) {
+            const cityDist = (c + ' ' + d).trim();
+            const fullText = (c + ' ' + d + ' ' + a).trim();
+
+            // 1. Cek kecocokan dari Kota / Kabupaten & Kecamatan terlebih dahulu
+            if (cityDist) {
                 for (const z of this.zones) {
                     for (const mc of (z.cities || [])) {
-                        if (mc && (c.includes(mc) || mc.includes(c))) {
+                        if (mc && (cityDist.includes(mc) || (c && mc.includes(c)))) {
                             this.selectedZoneId = z.id;
                             return;
                         }
@@ -76,10 +96,35 @@
                 }
             }
 
+            // 2. Cek kecocokan kata kunci kota/kecamatan di dalam Alamat Lengkap
+            if (fullText) {
+                for (const z of this.zones) {
+                    for (const mc of (z.cities || [])) {
+                        if (mc && mc.length >= 4 && fullText.includes(mc)) {
+                            this.selectedZoneId = z.id;
+                            return;
+                        }
+                    }
+                }
+            }
+
+            // 3. Cek kecocokan dari Provinsi
             if (p) {
                 for (const z of this.zones) {
                     for (const mp of (z.provinces || [])) {
                         if (mp && (p.includes(mp) || mp.includes(p))) {
+                            this.selectedZoneId = z.id;
+                            return;
+                        }
+                    }
+                }
+            }
+
+            // 4. Cek kecocokan nama provinsi di dalam Alamat Lengkap
+            if (fullText) {
+                for (const z of this.zones) {
+                    for (const mp of (z.provinces || [])) {
+                        if (mp && mp.length >= 4 && fullText.includes(mp)) {
                             this.selectedZoneId = z.id;
                             return;
                         }
@@ -275,7 +320,8 @@
                                        name="city"
                                        list="popular-cities-list"
                                        x-model="city"
-                                       @input="autoDetectZone()"
+                                       @input="onCityChange()"
+                                       @change="onCityChange()"
                                        required
                                        placeholder="Contoh: Kab. Lamongan, Surabaya..."
                                        class="w-full px-3.5 py-2.5 rounded-xl border border-brand-border text-xs sm:text-sm bg-white font-semibold">
@@ -290,18 +336,30 @@
                                 <label class="block text-xs font-bold text-brand-text uppercase mb-1">Provinsi *</label>
                                 <input type="text"
                                        name="province"
+                                       list="provinces-list"
                                        x-model="province"
                                        @input="autoDetectZone()"
+                                       @change="autoDetectZone()"
                                        required
                                        placeholder="Contoh: Jawa Timur"
                                        class="w-full px-3.5 py-2.5 rounded-xl border border-brand-border text-xs sm:text-sm bg-white">
+                                <datalist id="provinces-list">
+                                    @foreach($provinces ?? [] as $prov)
+                                        <option value="{{ $prov }}"></option>
+                                    @endforeach
+                                </datalist>
                             </div>
                         </div>
 
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-xs font-bold text-brand-text uppercase mb-1">Kecamatan</label>
-                                <input type="text" name="district" value="{{ old('district') }}" placeholder="Contoh: Kec. Lamongan / Sukodadi / Babat" class="w-full px-3.5 py-2.5 rounded-xl border border-brand-border text-xs sm:text-sm bg-white">
+                                <input type="text"
+                                       name="district"
+                                       x-model="district"
+                                       @input="autoDetectZone()"
+                                       placeholder="Contoh: Kec. Lamongan / Sukodadi / Babat"
+                                       class="w-full px-3.5 py-2.5 rounded-xl border border-brand-border text-xs sm:text-sm bg-white">
                             </div>
                             <div>
                                 <label class="block text-xs font-bold text-brand-text uppercase mb-1">Kode Pos</label>
@@ -311,50 +369,72 @@
 
                         <div>
                             <label class="block text-xs font-bold text-brand-text uppercase mb-1">Alamat Lengkap (Jalan, RT/RW, Patokan Rumah) *</label>
-                            <textarea name="address" rows="2" required placeholder="Contoh: Jl. Veteran No. 15, RT 02 RW 01, Dekat Alun-Alun Lamongan..." class="w-full px-3.5 py-2.5 rounded-xl border border-brand-border text-xs sm:text-sm bg-white">{{ old('address', $user->address) }}</textarea>
+                            <textarea name="address"
+                                      rows="2"
+                                      required
+                                      x-model="address"
+                                      @input="autoDetectZone()"
+                                      placeholder="Contoh: Jl. Veteran No. 15, RT 02 RW 01, Dekat Alun-Alun Lamongan..."
+                                      class="w-full px-3.5 py-2.5 rounded-xl border border-brand-border text-xs sm:text-sm bg-white"></textarea>
                         </div>
 
-                        <!-- Pilihan Zona Tarif J&T Express -->
-                        <div class="p-4 rounded-2xl bg-brand-cream/50 border border-brand-border space-y-3">
-                            <div class="flex items-center justify-between">
+                        <!-- Hasil Deteksi Otomatis Zona Tarif J&T Express Sesuai Alamat -->
+                        <div class="p-4 rounded-2xl bg-brand-cream/50 border border-brand-border space-y-2.5">
+                            <input type="hidden" name="shipping_zone_id" :value="selectedZoneId">
+
+                            <div class="flex flex-wrap items-center justify-between gap-2">
                                 <label class="block text-xs font-bold text-brand-text uppercase tracking-wider">
-                                    🚚 Zona Tarif Ongkir J&amp;T Express (Dari Gudang Lamongan) *
+                                    🚚 Tarif Ongkir J&amp;T Express (Otomatis Sesuai Alamat Tujuan)
                                 </label>
-                                <span class="text-[11px] font-bold text-emerald-700" x-show="isFreeShipping">🎉 Gratis Ongkir Aktif!</span>
+                                <div class="flex items-center gap-2">
+                                    <span class="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-extrabold" x-show="isFreeShipping" style="display: none;">
+                                        🎉 Gratis Ongkir Aktif!
+                                    </span>
+                                    <span class="px-2.5 py-0.5 rounded-full bg-brand-primary/10 text-brand-primary text-[10px] font-bold">
+                                        ✨ Terdeteksi Otomatis dari Alamat
+                                    </span>
+                                </div>
                             </div>
 
-                            <div class="space-y-2">
-                                @foreach($shippingZones as $z)
-                                    @php
-                                        $calc = ShippingRateService::calculateByZone($z, $totalWeight, $subtotal);
-                                    @endphp
-                                    <label class="flex items-center justify-between p-3 rounded-xl border bg-white cursor-pointer transition-all"
-                                           :class="Number(selectedZoneId) === {{ $z->id }} ? 'border-brand-primary ring-2 ring-brand-primary/20' : 'border-brand-border hover:border-brand-primary/40'">
-                                        <div class="flex items-center gap-3">
-                                            <input type="radio" name="shipping_zone_id" value="{{ $z->id }}" x-model="selectedZoneId" class="text-brand-primary focus:ring-brand-primary">
-                                            <div>
-                                                <p class="text-xs font-bold text-brand-text">
-                                                    {{ $z->name }}
-                                                    <span class="text-[10px] font-semibold px-2 py-0.5 rounded bg-brand-cream text-brand-primary ml-1">{{ $z->courier }} • {{ $z->service }}</span>
-                                                </p>
-                                                <p class="text-[11px] text-brand-textAlt">
-                                                    Estimasi tiba: {{ $z->etd }} • Tarif: Rp {{ number_format($z->cost_first_kg, 0, ',', '.') }}/kg pertama
-                                                    @if($z->free_shipping_min)
-                                                        <span class="text-emerald-700 font-semibold">(Gratis Ongkir min. belanja Rp {{ number_format($z->free_shipping_min, 0, ',', '.') }})</span>
-                                                    @endif
-                                                </p>
-                                            </div>
+                            <div class="flex items-center justify-between p-3.5 rounded-xl border border-brand-primary ring-2 ring-brand-primary/20 bg-white transition-all">
+                                <div class="flex items-start sm:items-center gap-3">
+                                    <div class="w-10 h-10 rounded-xl bg-red-50 border border-red-200 text-red-600 flex items-center justify-center font-extrabold text-xs shrink-0">
+                                        J&amp;T
+                                    </div>
+                                    <div class="space-y-0.5">
+                                        <p class="text-xs sm:text-sm font-bold text-brand-text flex flex-wrap items-center gap-1.5">
+                                            <span x-text="activeZone ? activeZone.name : 'Sesama Lamongan'"></span>
+                                            <span class="text-[10px] font-semibold px-2 py-0.5 rounded bg-brand-cream text-brand-primary"
+                                                  x-text="activeZone ? (activeZone.courier + ' • ' + activeZone.service) : 'J&T Express • EZ (Reguler)'"></span>
+                                        </p>
+                                        <p class="text-[11px] text-brand-textAlt">
+                                            📍 Tujuan:
+                                            <strong class="text-brand-text" x-text="[district, city, province].filter(Boolean).join(', ') || 'Masukkan Kota & Provinsi tujuan di atas'"></strong>
+                                        </p>
+                                        <p class="text-[11px] text-brand-textAlt">
+                                            Estimasi tiba: <strong x-text="activeZone ? activeZone.etd : '-'"></strong>
+                                            • Tarif: <span x-text="activeZone ? (formatRp(activeZone.cost_first_kg) + '/kg pertama') : '-'"></span>
+                                            <template x-if="activeZone && activeZone.free_shipping_min">
+                                                <span class="text-emerald-700 font-semibold" x-text="'(Gratis Ongkir min. belanja ' + formatRp(activeZone.free_shipping_min) + ')'"></span>
+                                            </template>
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div class="text-right shrink-0 ml-3">
+                                    <template x-if="isFreeShipping">
+                                        <div>
+                                            <span class="text-xs line-through text-brand-textAlt block" x-text="formatRp(rawShippingCost)"></span>
+                                            <span class="text-sm font-extrabold text-emerald-700">GRATIS</span>
                                         </div>
-                                        <div class="text-right shrink-0 ml-2">
-                                            @if($calc['is_free'])
-                                                <span class="text-xs line-through text-brand-textAlt block">Rp {{ number_format($calc['raw_cost'], 0, ',', '.') }}</span>
-                                                <span class="text-xs font-extrabold text-emerald-700">GRATIS</span>
-                                            @else
-                                                <span class="text-xs font-extrabold text-brand-text">Rp {{ number_format($calc['cost'], 0, ',', '.') }}</span>
-                                            @endif
+                                    </template>
+                                    <template x-if="!isFreeShipping">
+                                        <div>
+                                            <span class="text-sm font-extrabold text-brand-primary" x-text="formatRp(shippingCost)"></span>
+                                            <span class="text-[10px] text-brand-textAlt block">{{ $totalKg }} kg dari Lamongan</span>
                                         </div>
-                                    </label>
-                                @endforeach
+                                    </template>
+                                </div>
                             </div>
                         </div>
 

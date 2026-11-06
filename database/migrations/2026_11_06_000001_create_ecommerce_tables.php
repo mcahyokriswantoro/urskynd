@@ -125,16 +125,21 @@ return new class extends Migration
 
         // Tarif zona default J&T Express dari gudang Lamongan (bisa diubah Admin)
         $now = now();
+        $lamonganCities = 'Lamongan, Babat, Paciran, Brondong, Sukodadi, Deket, Tikung, Turi, Kalitengah, Karanggeneng, Sekaran, Maduran, Laren, Solokuro, Karangbinangun, Glagah, Sarirejo, Kembangbahu, Sugio, Kedungpring, Modo, Ngimbang, Bluluk, Sukorame, Sambeng, Mantup, Pucuk';
+        $jatimCities = 'Malang, Batu, Kediri, Blitar, Tulungagung, Trenggalek, Nganjuk, Madiun, Magetan, Ngawi, Ponorogo, Pacitan, Pasuruan, Probolinggo, Lumajang, Jember, Bondowoso, Situbondo, Banyuwangi, Sampang, Pamekasan, Sumenep, Madura';
+        $javaBaliCities = 'Jakarta, Bogor, Depok, Tangerang, Bekasi, Bandung, Cimahi, Cirebon, Tasikmalaya, Sukabumi, Karawang, Garut, Semarang, Solo, Surakarta, Magelang, Pekalongan, Tegal, Salatiga, Purwokerto, Banyumas, Cilacap, Kudus, Jepara, Pati, Klaten, Yogyakarta, Jogja, Sleman, Bantul, Serang, Cilegon, Denpasar, Badung, Gianyar, Tabanan, Singaraja';
         $javaBali = 'DKI Jakarta, Jawa Barat, Jawa Tengah, DI Yogyakarta, Banten, Bali';
+        $outerCities = 'Medan, Banda Aceh, Padang, Bukittinggi, Pekanbaru, Dumai, Batam, Tanjungpinang, Jambi, Palembang, Pangkalpinang, Bengkulu, Bandar Lampung, Metro, Pontianak, Singkawang, Palangkaraya, Banjarmasin, Banjarbaru, Balikpapan, Samarinda, Bontang, Tarakan, Manado, Bitung, Gorontalo, Palu, Mamuju, Makassar, Parepare, Palopo, Kendari, Baubau, Mataram, Bima, Lombok, Kupang';
         $outerIslands = 'Aceh, Sumatera Utara, Sumatera Barat, Riau, Kepulauan Riau, Jambi, Sumatera Selatan, Bangka Belitung, Bengkulu, Lampung, Kalimantan Barat, Kalimantan Tengah, Kalimantan Selatan, Kalimantan Timur, Kalimantan Utara, Sulawesi Utara, Gorontalo, Sulawesi Tengah, Sulawesi Barat, Sulawesi Selatan, Sulawesi Tenggara, Nusa Tenggara Barat, Nusa Tenggara Timur';
+        $eastCities = 'Ambon, Tual, Ternate, Tidore, Jayapura, Merauke, Timika, Mimika, Biak, Nabire, Sorong, Manokwari, Wamena';
 
         DB::table('shipping_zones')->insert([
-            ['name' => 'Sesama Lamongan', 'match_cities' => 'Lamongan', 'match_provinces' => null, 'cost_first_kg' => 8000, 'cost_next_kg' => 5000, 'etd' => '1 hari', 'free_shipping_min' => 150000, 'sort_order' => 1, 'is_default' => false],
+            ['name' => 'Sesama Lamongan', 'match_cities' => $lamonganCities, 'match_provinces' => null, 'cost_first_kg' => 8000, 'cost_next_kg' => 5000, 'etd' => '1 hari', 'free_shipping_min' => 150000, 'sort_order' => 1, 'is_default' => false],
             ['name' => 'Sekitar Lamongan (Gerbangkertosusila & Tetangga)', 'match_cities' => 'Gresik, Surabaya, Tuban, Bojonegoro, Jombang, Mojokerto, Sidoarjo, Bangkalan', 'match_provinces' => null, 'cost_first_kg' => 10000, 'cost_next_kg' => 7000, 'etd' => '1-2 hari', 'free_shipping_min' => null, 'sort_order' => 2, 'is_default' => false],
-            ['name' => 'Jawa Timur Lainnya', 'match_cities' => null, 'match_provinces' => 'Jawa Timur', 'cost_first_kg' => 12000, 'cost_next_kg' => 9000, 'etd' => '2-3 hari', 'free_shipping_min' => null, 'sort_order' => 3, 'is_default' => false],
-            ['name' => 'Pulau Jawa & Bali', 'match_cities' => null, 'match_provinces' => $javaBali, 'cost_first_kg' => 18000, 'cost_next_kg' => 14000, 'etd' => '2-4 hari', 'free_shipping_min' => null, 'sort_order' => 4, 'is_default' => false],
-            ['name' => 'Sumatera, Kalimantan, Sulawesi & Nusa Tenggara', 'match_cities' => null, 'match_provinces' => $outerIslands, 'cost_first_kg' => 35000, 'cost_next_kg' => 28000, 'etd' => '3-6 hari', 'free_shipping_min' => null, 'sort_order' => 5, 'is_default' => false],
-            ['name' => 'Maluku & Papua', 'match_cities' => null, 'match_provinces' => 'Maluku, Maluku Utara, Papua, Papua Barat, Papua Barat Daya, Papua Tengah, Papua Pegunungan, Papua Selatan', 'cost_first_kg' => 60000, 'cost_next_kg' => 50000, 'etd' => '5-9 hari', 'free_shipping_min' => null, 'sort_order' => 6, 'is_default' => true],
+            ['name' => 'Jawa Timur Lainnya', 'match_cities' => $jatimCities, 'match_provinces' => 'Jawa Timur', 'cost_first_kg' => 12000, 'cost_next_kg' => 9000, 'etd' => '2-3 hari', 'free_shipping_min' => null, 'sort_order' => 3, 'is_default' => false],
+            ['name' => 'Pulau Jawa & Bali', 'match_cities' => $javaBaliCities, 'match_provinces' => $javaBali, 'cost_first_kg' => 18000, 'cost_next_kg' => 14000, 'etd' => '2-4 hari', 'free_shipping_min' => null, 'sort_order' => 4, 'is_default' => false],
+            ['name' => 'Sumatera, Kalimantan, Sulawesi & Nusa Tenggara', 'match_cities' => $outerCities, 'match_provinces' => $outerIslands, 'cost_first_kg' => 35000, 'cost_next_kg' => 28000, 'etd' => '3-6 hari', 'free_shipping_min' => null, 'sort_order' => 5, 'is_default' => false],
+            ['name' => 'Maluku & Papua', 'match_cities' => $eastCities, 'match_provinces' => 'Maluku, Maluku Utara, Papua, Papua Barat, Papua Barat Daya, Papua Tengah, Papua Pegunungan, Papua Selatan', 'cost_first_kg' => 60000, 'cost_next_kg' => 50000, 'etd' => '5-9 hari', 'free_shipping_min' => null, 'sort_order' => 6, 'is_default' => true],
         ]);
 
         DB::table('shipping_zones')->update([

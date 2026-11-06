@@ -50,8 +50,10 @@ class CartController extends Controller
             ->filter(fn ($item) => $item->product !== null)
             ->values();
 
+        ShippingRateService::syncDefaultZoneKeywords();
         $shippingZones = ShippingZone::where('is_active', true)->orderBy('sort_order')->get();
         $popularLocations = ShippingRateService::popularLocations();
+        $provinces = ShippingRateService::provinces();
         $detectedAffiliate = TrackAffiliateReferral::currentAffiliate($request);
         $gatewaySettings = ShippingRateService::gatewaySettings();
 
@@ -60,6 +62,7 @@ class CartController extends Controller
             'cartItems',
             'shippingZones',
             'popularLocations',
+            'provinces',
             'detectedAffiliate',
             'gatewaySettings'
         ));
@@ -144,12 +147,25 @@ class CartController extends Controller
             'district' => ['nullable', 'string', 'max:80'],
             'postal_code' => ['nullable', 'string', 'max:10'],
             'address' => ['required', 'string', 'max:500'],
-            'shipping_zone_id' => ['required', 'exists:shipping_zones,id'],
+            'shipping_zone_id' => ['nullable', 'exists:shipping_zones,id'],
             'payment_channel' => ['required', 'string', 'max:60'],
             'notes' => ['nullable', 'string', 'max:500'],
         ]);
 
-        $zone = ShippingZone::findOrFail($validated['shipping_zone_id']);
+        // Tentukan zona tarif J&T secara otomatis dari alamat yang dimasukkan pelanggan
+        $zone = ShippingRateService::matchZone(
+            $validated['city'],
+            $validated['province'],
+            $validated['district'] ?? null,
+            $validated['address'] ?? null
+        );
+
+        if (!$zone && !empty($validated['shipping_zone_id'])) {
+            $zone = ShippingZone::find($validated['shipping_zone_id']);
+        }
+        if (!$zone) {
+            $zone = ShippingZone::where('is_active', true)->orderBy('sort_order')->firstOrFail();
+        }
 
         $subtotal = 0;
         $totalWeight = 0;
